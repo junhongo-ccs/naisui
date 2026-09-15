@@ -1,0 +1,29 @@
+{
+  "scenario_id": "sc_153mmh_24h_690mm_official",
+  "crs": "EPSG:4326",
+  "coordinates": [
+    [
+      139.691162109375,
+      35.62158189955966
+    ],
+    [
+      139.74609000177594,
+      35.62158189955966
+    ],
+    [
+      139.74609000177594,
+      35.58584279053022
+    ],
+    [
+      139.691162109375,
+      35.58584279053022
+    ]
+  ],
+  "calibration_status": "pre_calibration_screening",
+  "ramp_note": "内水氾濫ハザードPDF由来レイヤーとは異なる配色。本モデルの校正前スクリーニング結果であることを示す。",
+  "no_ponding_threshold_m": 0.01,
+  "clipped_to_target_towns_buffer_m": 100,
+  "depth_cap_m": 0.3,
+  "source_raster": "data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
+  "generated_at": "2026-09-15T11:16:38.584955+00:00"
+}

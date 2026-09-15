@@ -1,0 +1,9 @@
+id,address,landmark,quantity,source_updated,lat,lon,geocode_precision,geocode_source,geocode_matched_title,geocoded_on,crs
+39,東京都品川区二葉2-19,西大井広場内,500,令和7年11月13日,35.602776,139.723312,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区二葉二丁目１９番,2026-09-15,EPSG:4326
+40,東京都品川区中延4-19,東急大井町線ガード下,300,令和7年11月13日,35.604256,139.71048,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延四丁目１９番,2026-09-15,EPSG:4326
+42,東京都品川区中延5-14,荏原町公園入口横,400,令和7年11月13日,35.602173,139.709,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延五丁目１４番,2026-09-15,EPSG:4326
+45,東京都品川区中延5-3,弁天通り公園内,200,令和7年11月13日,35.603661,139.708633,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延五丁目３番,2026-09-15,EPSG:4326
+46,東京都品川区中延6-4,源氏前公園入り口,300,令和7年11月13日,35.602276,139.71257,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延六丁目４番,2026-09-15,EPSG:4326
+47,東京都品川区中延3-3,東急池上線ガード上,200,令和7年11月13日,35.608585,139.710632,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延三丁目３番,2026-09-15,EPSG:4326
+48,東京都品川区中延6-5,中延六丁目広場,130,令和7年11月13日,35.602188,139.711182,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区中延六丁目５番,2026-09-15,EPSG:4326
+53,東京都品川区二葉3-17,二葉中央のんき通り広場,200,令和7年11月13日,35.604118,139.721695,banchi_representative_point,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),東京都品川区二葉三丁目１７番,2026-09-15,EPSG:4326

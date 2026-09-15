@@ -1,0 +1,10 @@
+{
+  "scenario_id": "sc_153mmh_24h_690mm_official",
+  "model": "experimental pysheds D8 routing with depression capacity and overflow",
+  "depression_threshold_m": 0.01,
+  "max_depression_depth_m": null,
+  "limitations": [
+    "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
+    "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。"
+  ]
+}

@@ -1,0 +1,59 @@
+# secrets
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# node
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# large GIS data (kept out of git; see data/naisui_poc/README.md for provenance)
+*.tif
+*.tiff
+*.geotiff
+*.pdf
+*.gpkg
+*.qgz
+*.aux.xml
+*.points
+data/naisui_poc/01_raw/dem/
+data/naisui_poc/02_processed/depression_review/
+data/naisui_poc/02_processed/evaluation/shinagawa_hazard_from_pdf.geojson
+data/naisui_poc/02_processed/pysheds_sensitivity/
+data/naisui_poc/02_processed/surface_water_balance/
+data/naisui_poc/02_processed/pysheds_surface_routing/sc_50mm_const/
+data/naisui_poc/02_processed/pysheds_surface_routing/sc_80mm_peak/
+data/naisui_poc/02_processed/pysheds_surface_routing/sc_100mm_extreme/
+data/naisui_poc/02_processed/web_map/ponding_depth_sc_50mm_const.*
+data/naisui_poc/02_processed/web_map/ponding_depth_sc_80mm_peak.*
+data/naisui_poc/02_processed/web_map/ponding_depth_sc_100mm_extreme.*
+tmp/
+
+# generated logs and local extraction scratch files
+backend/uvicorn.log
+extract.txt
+29G_22sugimoto.pdf
+frontend/public/icons.svg
+frontend/src/assets/
+
+# graphify publishable outputs only
+graphify-out/*
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/graph.html
+!graphify-out/graph.json
+!graphify-out/manifest.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

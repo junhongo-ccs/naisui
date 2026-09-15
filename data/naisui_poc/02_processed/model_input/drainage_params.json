@@ -1,0 +1,31 @@
+{
+  "target_area": "Shinagawa_Nakanobu_Futaba",
+  "model_version": "baseline_uniform_drainage_v1",
+  "grid_size_m": 5.0,
+  "crs": "EPSG:6677",
+  "drainage_capacity": {
+    "type": "uniform_equivalent_rate",
+    "value_mm_per_hr": 50.0,
+    "description": "初期PoC用の仮定排水能力。個別管路の能力ではなく、地表セルからの等価的な排水量を表す。"
+  },
+  "runoff": {
+    "type": "all_rainfall_becomes_surface_input",
+    "runoff_coefficient": 1.0,
+    "description": "保守的な初期設定。土地利用別の流出係数・浸透能力は、検証データを得た後に導入する。"
+  },
+  "ponding_and_drainage": {
+    "allow_surface_storage": true,
+    "description": "降雨強度が排水能力を下回っても、既に地表へ溜まった水は残留し、時間ステップごとに排水する。"
+  },
+  "surface_routing": {
+    "enabled": true,
+    "method": "surface_gradient_one_pass_baseline",
+    "transfer_fraction_per_step": 0.2,
+    "iterations_per_step": 1,
+    "description": "校正前の保守的な基準モデル。各時間ステップで、湛水の一部を最も低い隣接セルへ1回だけ移す。D8連続ルーティングは凹地補正・越流の実装後に実験モードとして使用する。"
+  },
+  "limitations": [
+    "個別の管径、勾配、管内水位、ポンプ運転、雨水ます閉塞は表現しない。",
+    "出力はスクリーニング用の地表湛水リスクであり、個別地点の浸水深予報ではない。"
+  ]
+}

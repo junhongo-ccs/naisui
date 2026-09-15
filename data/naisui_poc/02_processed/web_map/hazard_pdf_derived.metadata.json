@@ -1,0 +1,9 @@
+{
+  "source_gpkg": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\evaluation\\hazard_shinagawa_normalized.gpkg",
+  "feature_count": 2486,
+  "crs": "EPSG:4326",
+  "calibration_status": "pre_calibration_pdf_derived",
+  "derivation_note": "地理参照済みPDFから抽出した派生ベクタであり、公式GIS原典ではない。相対的な形状比較に限る。詳細: docs/品川_ハザードPDF地理参照・色採取記録.md",
+  "gcp_rmse_m": 4.5,
+  "generated_at": "2026-09-15T06:42:56.833656+00:00"
+}

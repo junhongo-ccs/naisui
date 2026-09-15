@@ -1,0 +1,6 @@
+id,name,address,shelter_type,lat,lon,geocode_precision,geocode_source,geocoded_on,crs
+1,中延小学校,東京都品川区中延1-11-15,区民避難所,35.612083,139.709946,banchi,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),2026-09-15,EPSG:4326
+2,源氏前小学校,東京都品川区中延6-2-18,区民避難所,35.602840,139.711731,banchi,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),2026-09-15,EPSG:4326
+3,上神明小学校,東京都品川区二葉4-4-10,区民避難所,35.602905,139.715851,banchi,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),2026-09-15,EPSG:4326
+4,豊葉の杜学園,東京都品川区二葉1-3-40,区民避難所、自主避難施設,35.607521,139.725403,banchi,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),2026-09-15,EPSG:4326
+5,延山小学校,東京都品川区西中延2-17-5,区民避難所,35.609230,139.708130,banchi,国土地理院 住所検索API (msearch.gsi.go.jp/address-search),2026-09-15,EPSG:4326

@@ -1,0 +1,182 @@
+{
+  "type": "FeatureCollection",
+  "name": "sandbag_locations_nakanobu_futaba",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.723312,
+          35.602776
+        ]
+      },
+      "properties": {
+        "id": "39",
+        "address": "東京都品川区二葉2-19",
+        "landmark": "西大井広場内",
+        "quantity": "500",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区二葉二丁目１９番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.71048,
+          35.604256
+        ]
+      },
+      "properties": {
+        "id": "40",
+        "address": "東京都品川区中延4-19",
+        "landmark": "東急大井町線ガード下",
+        "quantity": "300",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延四丁目１９番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.709,
+          35.602173
+        ]
+      },
+      "properties": {
+        "id": "42",
+        "address": "東京都品川区中延5-14",
+        "landmark": "荏原町公園入口横",
+        "quantity": "400",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延五丁目１４番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.708633,
+          35.603661
+        ]
+      },
+      "properties": {
+        "id": "45",
+        "address": "東京都品川区中延5-3",
+        "landmark": "弁天通り公園内",
+        "quantity": "200",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延五丁目３番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.71257,
+          35.602276
+        ]
+      },
+      "properties": {
+        "id": "46",
+        "address": "東京都品川区中延6-4",
+        "landmark": "源氏前公園入り口",
+        "quantity": "300",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延六丁目４番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.710632,
+          35.608585
+        ]
+      },
+      "properties": {
+        "id": "47",
+        "address": "東京都品川区中延3-3",
+        "landmark": "東急池上線ガード上",
+        "quantity": "200",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延三丁目３番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.711182,
+          35.602188
+        ]
+      },
+      "properties": {
+        "id": "48",
+        "address": "東京都品川区中延6-5",
+        "landmark": "中延六丁目広場",
+        "quantity": "130",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区中延六丁目５番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.721695,
+          35.604118
+        ]
+      },
+      "properties": {
+        "id": "53",
+        "address": "東京都品川区二葉3-17",
+        "landmark": "二葉中央のんき通り広場",
+        "quantity": "200",
+        "source_updated": "令和7年11月13日",
+        "geocode_precision": "banchi_representative_point",
+        "geocode_source": "国土地理院 住所検索API (msearch.gsi.go.jp/address-search)",
+        "geocode_matched_title": "東京都品川区二葉三丁目１７番",
+        "geocoded_on": "2026-09-15",
+        "crs": "EPSG:4326"
+      }
+    }
+  ]
+}

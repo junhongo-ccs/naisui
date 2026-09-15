@@ -1,0 +1,17 @@
+{
+  "notes": "QGISで地理参照済みの画像から凡例と同じ塗り色をスポイトで採取して設定する。値は例示であり、このまま使わない。",
+  "classes": [
+    {
+      "depth_class": "0.1m以上0.5m未満",
+      "depth_min_m": 0.1,
+      "rgb": [255, 255, 0],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "0.5m以上1.0m未満",
+      "depth_min_m": 0.5,
+      "rgb": [255, 170, 0],
+      "tolerance_rgb": 8
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "notes": "2026-09-14にQGISの地物情報表示で、地理参照済みPDFの凡例色見本中央から採取。PDF由来の比較用データであり、公式GIS原典ではない。",
+  "classes": [
+    {
+      "depth_class": "0.1m以上0.5m未満",
+      "depth_min_m": 0.1,
+      "rgb": [247, 245, 170],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "0.5m以上1.0m未満",
+      "depth_min_m": 0.5,
+      "rgb": [247, 225, 167],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "1.0m以上3.0m未満",
+      "depth_min_m": 1.0,
+      "rgb": [254, 217, 191],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "3.0m以上5.0m未満",
+      "depth_min_m": 3.0,
+      "rgb": [255, 183, 184],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "5.0m以上",
+      "depth_min_m": 5.0,
+      "rgb": [255, 145, 144],
+      "tolerance_rgb": 8
+    }
+  ]
+}

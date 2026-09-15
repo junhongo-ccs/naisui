@@ -1,0 +1,13 @@
+{
+  "created_at_utc": "2026-09-14T10:21:42.782565+00:00",
+  "input": "data\\naisui_poc\\02_processed\\evaluation\\shinagawa_hazard_from_pdf.geojson",
+  "reference_raster": "data\\naisui_poc\\02_processed\\surface_water_balance\\sc_100mm_extreme\\maximum_ponding_depth_m.tif",
+  "source_feature_count": 21076,
+  "overlapping_feature_count": 2486,
+  "source_crs": "EPSG:6677",
+  "output_crs": "EPSG:6677",
+  "depth_field_source": "depth_min_m",
+  "depth_field_normalized": "depth_min_m",
+  "unparsed_depth_class_count": 0,
+  "acceptance": "passed"
+}

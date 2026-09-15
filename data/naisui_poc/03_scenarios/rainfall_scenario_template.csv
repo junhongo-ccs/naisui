@@ -1,0 +1,5 @@
+scenario_id,elapsed_time_min,raw_rainfall_mm_hr,runoff_coefficient,surface_input_mm_hr,equivalent_drainage_capacity_mm_hr,net_surface_water_mm_hr,notes
+example_80mmh,0,30.0,1.0,30.0,50.0,-20.0,排水余力は20mm/h。既存の地表貯留水があれば排水する。
+example_80mmh,10,60.0,1.0,60.0,50.0,10.0,排水能力を10mm/h超過。
+example_80mmh,20,80.0,1.0,80.0,50.0,30.0,排水能力を30mm/h超過。
+example_80mmh,30,40.0,1.0,40.0,50.0,-10.0,新たな余剰水は生じないが既存貯留水は残り得る。

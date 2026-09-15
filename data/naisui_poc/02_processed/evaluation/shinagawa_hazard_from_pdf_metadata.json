@@ -1,0 +1,65 @@
+{
+  "created_at_utc": "2026-09-14T10:19:22.255735+00:00",
+  "derived_from_pdf": true,
+  "source_pdf": "data\\naisui_poc\\01_raw\\hazard_map\\tokyo_jonan_usuisyusui_2026-03-25.pdf",
+  "georeferenced_raster": "data\\naisui_poc\\01_raw\\hazard_map\\shinagawa_georeferenced.tif",
+  "gcp_rmse_m": 4.5,
+  "hourly_maximum_rainfall_mm": 153.0,
+  "total_rainfall_mm": 690.0,
+  "output_crs": "PROJCS[\"JGD2011 / Japan Plane Rectangular CS IX\",GEOGCS[\"JGD2011\",DATUM[\"Japanese_Geodetic_Datum_2011\",SPHEROID[\"GRS 1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"1128\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"6668\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",36],PARAMETER[\"central_meridian\",139.833333333333],PARAMETER[\"scale_factor\",0.9999],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Northing\",NORTH],AXIS[\"Easting\",EAST],AUTHORITY[\"EPSG\",\"6677\"]]",
+  "minimum_polygon_area_m2": 100.0,
+  "feature_count": 21076,
+  "classes": [
+    {
+      "depth_class": "0.1m以上0.5m未満",
+      "depth_min_m": 0.1,
+      "rgb": [
+        247,
+        245,
+        170
+      ],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "0.5m以上1.0m未満",
+      "depth_min_m": 0.5,
+      "rgb": [
+        247,
+        225,
+        167
+      ],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "1.0m以上3.0m未満",
+      "depth_min_m": 1.0,
+      "rgb": [
+        254,
+        217,
+        191
+      ],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "3.0m以上5.0m未満",
+      "depth_min_m": 3.0,
+      "rgb": [
+        255,
+        183,
+        184
+      ],
+      "tolerance_rgb": 8
+    },
+    {
+      "depth_class": "5.0m以上",
+      "depth_min_m": 5.0,
+      "rgb": [
+        255,
+        145,
+        144
+      ],
+      "tolerance_rgb": 8
+    }
+  ],
+  "usage_limit": "Derived from an official PDF for relative spatial comparison only; not an authoritative GIS dataset or an evacuation-decision input."
+}
