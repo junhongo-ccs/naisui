@@ -71,6 +71,13 @@ function boundsOfFeature(feature) {
   return [[minX, minY], [maxX, maxY]];
 }
 
+function focusTown(map, features, townName) {
+  const feature = features?.find((item) => item.properties.town_name === townName);
+  if (feature) {
+    map.fitBounds(boundsOfFeature(feature), { padding: 120, duration: 1200, essential: true });
+  }
+}
+
 const LAYER_LABELS = {
   hazard: "ハザードレイヤー",
   towns: "町丁目境界",
@@ -84,6 +91,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
   const mapRef = useRef(null);
   const readyRef = useRef(false);
   const townsFeaturesRef = useRef(null);
+  const selectedTownNameRef = useRef(selectedTownName);
   const [failedLayers, setFailedLayers] = useState([]);
 
   // 初期化は一度だけ。以降のシナリオ切替では再生成しない（白画面化を避ける）。
@@ -96,6 +104,16 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
     });
     mapRef.current = map;
     map.addControl(new NavigationControl(), "top-right");
+
+    // 地図列の幅は画面幅に応じて変わる。resizeだけでは選択地点の表示範囲が再計算されないため、
+    // 選択中の町丁目の境界を現在のコンテナ寸法で再fitする。
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+      if (readyRef.current && selectedTownNameRef.current) {
+        focusTown(map, townsFeaturesRef.current, selectedTownNameRef.current);
+      }
+    });
+    resizeObserver.observe(containerRef.current);
 
     map.on("load", async () => {
       const layers = scenarioDetail.map_layers;
@@ -165,7 +183,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
           type: "circle",
           source: "sandbag",
           paint: {
-            "circle-radius": 5,
+            "circle-radius": 7,
             "circle-color": "#d97706",
             "circle-stroke-width": 1.5,
             "circle-stroke-color": "#ffffff",
@@ -175,15 +193,21 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
 
       if (shelter.status === "fulfilled") {
         map.addSource("shelter", { type: "geojson", data: shelter.value });
+        // circleレイヤーは丸しか描けないため、■記号のsymbolレイヤーで四角として表示する。
         map.addLayer({
           id: "shelter-points",
-          type: "circle",
+          type: "symbol",
           source: "shelter",
+          layout: {
+            "text-field": "■",
+            "text-size": 20,
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+          },
           paint: {
-            "circle-radius": 6,
-            "circle-color": "#1c4f8a",
-            "circle-stroke-width": 1.5,
-            "circle-stroke-color": "#ffffff",
+            "text-color": "#16a34a",
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.5,
           },
         });
       }
@@ -214,9 +238,15 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
 
       setFailedLayers(failed);
       readyRef.current = true;
+      if (selectedTownNameRef.current) {
+        focusTown(map, townsFeaturesRef.current, selectedTownNameRef.current);
+      }
     });
 
-    return () => map.remove();
+    return () => {
+      resizeObserver.disconnect();
+      map.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -248,13 +278,12 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
   // 重心の座標はハードコードせず、読み込み済みのtown_boundaries.geojsonから都度計算する
   // （境界データが更新されても自動追従する）。
   useEffect(() => {
+    selectedTownNameRef.current = selectedTownName;
     const map = mapRef.current;
     if (!map || !readyRef.current || !map.getLayer("towns-selected")) return;
     map.setFilter("towns-selected", ["==", ["get", "town_name"], selectedTownName ?? "__none__"]);
     if (!selectedTownName) return;
-    const feature = townsFeaturesRef.current?.find((f) => f.properties.town_name === selectedTownName);
-    if (!feature) return;
-    map.fitBounds(boundsOfFeature(feature), { padding: 120, duration: 1200, essential: true });
+    focusTown(map, townsFeaturesRef.current, selectedTownName);
   }, [selectedTownName]);
 
   return (
