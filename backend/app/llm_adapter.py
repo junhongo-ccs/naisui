@@ -1,8 +1,8 @@
 """Stand-in for the Dify LLM call.
 
-Dify itself is not wired up yet (docs/中延二葉_チャットUI_要件定義.md §5: 作らないもの).
+Dify itself is not wired up yet (docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md §5: 作らないもの).
 This module builds the same response contract
-(docs/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §6) from a deterministic
+(docs/02_仕様・要件/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §6) from a deterministic
 template so the frontend and API contract can be built/tested now. Swap this
 module's `generate` function for a real Dify call later; callers should not
 need to change.
@@ -13,9 +13,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-# 実績照合レビュー(docs/中延二葉_モデル実績照合レビュー.md 第2章)のtied-rank Spearman ρ。
+# 実績照合レビュー(docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md 第2章)のtied-rank Spearman ρ。
 # UIでは実績を主張の根拠にせず、モデル推定が過去傾向とどれだけ整合するかの参考値として示す
-# （docs/中延二葉_チャットUI_要件定義.md 第6章「モデルと浸水実績データの提示方針」）。
+# （docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md 第6章「モデルと浸水実績データの提示方針」）。
 SCENARIO_META = {
     "sc_153mmh_24h_690mm_official": {
         "label": "想定最大規模降雨 (1時間153mm・24時間690mm)",

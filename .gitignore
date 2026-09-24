@@ -40,8 +40,6 @@ tmp/
 
 # generated logs and local extraction scratch files
 backend/uvicorn.log
-extract.txt
-29G_22sugimoto.pdf
 frontend/public/icons.svg
 frontend/src/assets/
 
@@ -57,3 +55,7 @@ graphify-out/*
 Thumbs.db
 .vscode/
 .idea/
+*.gpkg-shm
+*.gpkg-wal
+.playwright-mcp/
+data/naisui_poc/01_raw/hazard_map/tokyo_opendata_jonankaisei/*.csv

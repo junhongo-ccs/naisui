@@ -6,7 +6,7 @@ Reprojects `hazard_shinagawa_normalized.gpkg` (EPSG:6677) to WGS84 and adds a
 data-refresh step, not something the frontend or backend should run per request.
 
 Source of the underlying data and its limitations:
-docs/品川_ハザードPDF地理参照・色採取記録.md
+docs/04_GIS作業手順/品川_ハザードPDF地理参照・色採取記録.md
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def run(args: argparse.Namespace) -> None:
         "calibration_status": "pre_calibration_pdf_derived",
         "derivation_note": (
             "地理参照済みPDFから抽出した派生ベクタであり、公式GIS原典ではない。"
-            "相対的な形状比較に限る。詳細: docs/品川_ハザードPDF地理参照・色採取記録.md"
+            "相対的な形状比較に限る。詳細: docs/04_GIS作業手順/品川_ハザードPDF地理参照・色採取記録.md"
         ),
         "gcp_rmse_m": float(gdf["gcp_rmse_m"].iloc[0]) if "gcp_rmse_m" in gdf.columns and len(gdf) else None,
         "generated_at": datetime.now(timezone.utc).isoformat(),

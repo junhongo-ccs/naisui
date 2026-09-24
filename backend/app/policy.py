@@ -1,7 +1,7 @@
 """Deterministic safety policy, applied before any LLM/template response is built.
 
 Implements the decision table in
-docs/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §3, ahead of the (currently
+docs/02_仕様・要件/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §3, ahead of the (currently
 template-based, later Dify-backed) explanation step. Nothing here should be
 bypassed by user input, RAG content, or the LLM adapter.
 """
@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-# 簡易キーワードマッチ。精緻化は別タスク（docs/中延二葉_チャットUI_要件定義.md 未確定の前提）。
+# 簡易キーワードマッチ。精緻化は別タスク（docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md 未確定の前提）。
 EMERGENCY_KEYWORDS = [
     "閉じ込め",
     "閉じこめ",

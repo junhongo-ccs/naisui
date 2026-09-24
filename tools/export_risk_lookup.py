@@ -21,7 +21,7 @@ TARGET_TOWN_PATTERN = r"^(中延[一二三四五六]丁目|二葉[一二三四]�
 
 # area_over_threshold_ratio（浸水深閾値を超えたセルの面積比）でラベル付けする。
 # max_depth_m は単一セルの最大値でありDEMアーティファクトに支配されるため使わない。
-# 根拠: docs/中延二葉_モデル実績照合レビュー.md
+# 根拠: docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md
 #   区の浸水実績（町丁目別棟数）とのSpearman順位相関で、max_depth_mは負相関（ρ=-0.30）、
 #   area_over_threshold_ratioは正相関（ρ=+0.517、n=9のため統計的有意ではないが実績と整合的）。
 # 閾値は sc_100mm_extreme / pysheds_surface_routing の実データ分布（0%〜2.385%）を参考にした

@@ -26,7 +26,7 @@ from rasterio.warp import Resampling, calculate_default_transform, reproject
 ROOT = Path(__file__).resolve().parents[1]
 
 # 対象10町丁目 + 100mバッファの外側はDEM解析範囲の縁にあたり、水が「その先に流れる場所がない」
-# ことによる境界アーティファクトの疑いが強い（docs/中延二葉_モデル実績照合レビュー.md 第3章の
+# ことによる境界アーティファクトの疑いが強い（docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md 第3章の
 # 凹地容量アーティファクトと同根）。2026-09-15、着色ピクセルの93.4%が対象町丁目の外だったため、
 # ユーザー判断でクリップすることに決定（オプション3: 対象町丁目+少し余白のみ表示）。
 TARGET_TOWN_PATTERN = r"^(中延[一二三四五六]丁目|二葉[一二三四]丁目)$"
@@ -56,7 +56,7 @@ def target_area_geometry_4326():
 # puddle. The 0.2m figure in the risk panel is a separate, stricter judgment
 # threshold for the risk_level label; the map's job is to show where the
 # model finds any ponding at all. Cap is 0.3m (not the raw max_depth_m range,
-# up to 6m, dominated by DEM artifacts — docs/中延二葉_モデル実績照合レビュー.md
+# up to 6m, dominated by DEM artifacts — docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md
 # 第3章) so the gradient stays legible across the depths that actually occur.
 NO_PONDING_THRESHOLD_M = 0.01
 RAMP_STOPS = [

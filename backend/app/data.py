@@ -2,7 +2,7 @@
 
 All reads happen once here; request handlers only touch in-memory dicts.
 This mirrors the requirement that re-querying a scenario must not
-re-fetch or re-compute anything (docs/UI_デザイン受け入れ基準.md).
+re-fetch or re-compute anything (docs/02_仕様・要件/UI_デザイン受け入れ基準.md).
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ PROCESSED = ROOT / "data/naisui_poc/02_processed"
 RAW = ROOT / "data/naisui_poc/01_raw"
 WEB_MAP = PROCESSED / "web_map"
 
-# 採用パイプライン。docs/中延二葉_モデル実績照合レビュー.md で確定。
+# 採用パイプライン。docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md で確定。
 PIPELINE_DIR = PROCESSED / "pysheds_surface_routing"
 
 SCENARIOS: list[dict[str, Any]] = [

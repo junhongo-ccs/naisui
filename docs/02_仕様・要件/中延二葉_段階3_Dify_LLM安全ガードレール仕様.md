@@ -76,7 +76,7 @@ LLMの前に、Difyの条件分岐またはバックエンドで次を判定す�
 
 ## 5. Dify用システムプロンプト
 
-実装用の本文は [safety_guardrails.md](../data/naisui_poc/04_llm_knowledge/safety_guardrails.md) を使用する。Difyの変数に `official_status`、`model_result`、`policy_flags`、`retrieved_at` を構造化して渡す。
+実装用の本文は [safety_guardrails.md](../../data/naisui_poc/04_llm_knowledge/safety_guardrails.md) を使用する。Difyの変数に `official_status`、`model_result`、`policy_flags`、`retrieved_at` を構造化して渡す。
 
 ## 6. 応答出力の契約
 
