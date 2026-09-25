@@ -67,12 +67,32 @@ const HAZARD_LEGEND_LABELS = {
   "5.0m以上": "5m以上",
 };
 
-// 凡例は「何を示しているか」を書く。データの出どころは左下の注記に任せる。
-function MapLegend() {
+// 凡例の見出しのチェックで表示・非表示を切り替える地図レイヤー。
+const TOGGLE_LAYER_IDS = { hazard: "hazard-fill", ponding: "ponding-layer" };
+
+function applyLayerVisibility(map, visible) {
+  for (const [key, layerId] of Object.entries(TOGGLE_LAYER_IDS)) {
+    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", visible[key] ? "visible" : "none");
+  }
+}
+
+function LegendToggle({ checked, onChange, children }) {
   return (
-    <div className="bg-white/90 rounded px-2.5 py-2 text-xs text-gray-800 border border-gray-200 pointer-events-none space-y-2 w-56">
-      <div>
-        <div className="font-medium">浸水が想定される区域と深さ</div>
+    <label className="flex items-center gap-1.5 font-medium cursor-pointer select-none">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-brand-600" />
+      {children}
+    </label>
+  );
+}
+
+// 凡例は「何を示しているか」を書く。データの出どころは左下の注記に任せる。
+function MapLegend({ visible, onToggle }) {
+  return (
+    <div className="bg-white/90 rounded px-2.5 py-2 text-xs text-gray-800 border border-gray-200 space-y-2 w-56">
+      <div className={visible.hazard ? "" : "opacity-50"}>
+        <LegendToggle checked={visible.hazard} onChange={(v) => onToggle("hazard", v)}>
+          浸水が想定される区域と深さ
+        </LegendToggle>
         <div className="text-gray-500 mb-1">大雨（1時間153mm・24時間690mm）のとき</div>
         <div className="space-y-0.5">
           {Object.entries(HAZARD_COLOR_BY_CLASS).map(([depthClass, color]) => (
@@ -86,8 +106,10 @@ function MapLegend() {
           ))}
         </div>
       </div>
-      <div>
-        <div className="font-medium">雨水がたまりやすい場所</div>
+      <div className={visible.ponding ? "" : "opacity-50"}>
+        <LegendToggle checked={visible.ponding} onChange={(v) => onToggle("ponding", v)}>
+          雨水がたまりやすい場所
+        </LegendToggle>
         <div className="text-gray-500 mb-1">低い所や道路沿い。濃いほど深い</div>
         <div
           className="h-3 w-full rounded-sm border border-gray-300"
@@ -141,6 +163,8 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
   const townsFeaturesRef = useRef(null);
   const selectedTownNameRef = useRef(selectedTownName);
   const [failedLayers, setFailedLayers] = useState([]);
+  const [layerVisible, setLayerVisible] = useState({ hazard: true, ponding: true });
+  const layerVisibleRef = useRef(layerVisible);
 
   // 初期化は一度だけ。以降のシナリオ切替では再生成しない（白画面化を避ける）。
   useEffect(() => {
@@ -285,6 +309,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
       }
 
       setFailedLayers(failed);
+      applyLayerVisibility(map, layerVisibleRef.current);
       readyRef.current = true;
       if (selectedTownNameRef.current) {
         focusTown(map, townsFeaturesRef.current, selectedTownNameRef.current);
@@ -334,11 +359,19 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
     focusTown(map, townsFeaturesRef.current, selectedTownName);
   }, [selectedTownName]);
 
+  // 凡例のチェックに合わせて、公式の浸水想定とたまりやすさの層を表示・非表示にする。
+  useEffect(() => {
+    layerVisibleRef.current = layerVisible;
+    const map = mapRef.current;
+    if (!map || !readyRef.current) return;
+    applyLayerVisibility(map, layerVisible);
+  }, [layerVisible]);
+
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
       <div className="absolute top-2 left-2">
-        <MapLegend />
+        <MapLegend visible={layerVisible} onToggle={(key, value) => setLayerVisible((prev) => ({ ...prev, [key]: value }))} />
       </div>
       <div className="absolute bottom-2 left-2 flex flex-col gap-1 items-start">
         {/* モデルの前提はAPIのmodel（backend/app/data.py MODEL_INFO）から表示する（PLATEAU導入計画 7章）。 */}
