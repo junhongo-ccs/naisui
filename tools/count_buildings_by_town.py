@@ -4,9 +4,10 @@
 リスク指標、UIは変更しない。検証の物差し（実績側）だけを建物数で正規化する。
 
 入力の建築物データは、PLATEAU `bldg` のCityGMLをGeoPackage/GeoJSONへ変換したもの
-（CityGMLを直接は読まない）。QGIS同梱のogr2ogrで変換できる:
-  ogr2ogr -f GPKG bldg.gpkg 53393527_bldg_6697_op.gml Building -nlt MULTIPOLYGON -dim XY -nln bldg
-複数メッシュは -append で同じレイヤーへ追加する。
+（CityGMLを直接は読まない）。QGIS同梱のogr2ogrで、建物外形（lod0RoofEdge）を読む:
+  ogr2ogr -oo GFS_TEMPLATE=tools/gdal/plateau_bldg_lod0.gfs -oo EXPOSE_GML_ID=YES -f GPKG bldg_lod0.gpkg     53393527_bldg_6697_op.gml Building -nlt MULTIPOLYGON -dim XY -nln bldg
+複数メッシュは -append で同じレイヤーへ追加する。テンプレート無しで変換するとlod1Solidが選ばれ、
+LOD2を持つ建物は形状が空になる（load_buildingsは両方の形式を扱える）。
 
 出力（既定では data/naisui_poc/02_processed/plateau/）:
   building_counts_by_town.csv        町丁目別建物棟数

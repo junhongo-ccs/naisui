@@ -1,0 +1,20 @@
+<GMLFeatureClassList>
+  <!-- PLATEAU bldg の建物外形（lod0RoofEdge）だけを読むためのGDAL GMLスキーマ。
+       ogr2ogr -oo GFS_TEMPLATE=tools/gdal/plateau_bldg_lod0.gfs -oo EXPOSE_GML_ID=YES で使う。
+       既定の読み方ではlod1Solidが選ばれ、LOD2を持つ建物は形状が空になるため。 -->
+  <GMLFeatureClass>
+    <Name>Building</Name>
+    <ElementPath>Building</ElementPath>
+    <GeomPropertyDefn>
+      <Name>lod0RoofEdge</Name>
+      <ElementPath>lod0RoofEdge</ElementPath>
+      <Type>MultiPolygon</Type>
+    </GeomPropertyDefn>
+    <SRSName>http://www.opengis.net/def/crs/EPSG/0/6697</SRSName>
+    <PropertyDefn>
+      <Name>LocalityName</Name>
+      <ElementPath>address|Address|xalAddress|AddressDetails|Country|Locality|LocalityName</ElementPath>
+      <Type>String</Type>
+    </PropertyDefn>
+  </GMLFeatureClass>
+</GMLFeatureClassList>

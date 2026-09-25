@@ -1,9 +1,9 @@
 {
   "phase": "PLATEAU導入計画 フェーズ0",
-  "generated_at": "2026-09-25T05:21:37+00:00",
+  "generated_at": "2026-09-25T05:57:42+00:00",
   "inputs": {
     "landuse": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\luse_2025.gpkg",
-    "buildings": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\bldg_2025.gpkg",
+    "buildings": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\bldg_2025_lod0.gpkg",
     "towns": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\boundaries\\r2kb13109.shp",
     "mapping": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\landuse_category_mapping.csv"
   },
@@ -15,14 +15,14 @@
     "1": 575,
     "2": 373
   },
-  "buildings_in_target": 10571,
+  "buildings_in_target": 10620,
   "building_stats": {
-    "input_features": 32173,
-    "empty_geometries": 832,
-    "polygon_features": 31341,
-    "unique_buildings": 31341,
+    "input_features": 103052,
+    "empty_geometries": 0,
+    "polygon_features": 103052,
+    "unique_buildings": 103052,
     "id_field_found": 1,
-    "repaired_invalid_geometries": 31341
+    "repaired_invalid_geometries": 0
   },
   "category_rule": "bldgの建物外形を「建物・屋根」とし、残りの土地利用区画を分類対応表のcategory_outside_buildingsで区分する。",
   "limitations": [

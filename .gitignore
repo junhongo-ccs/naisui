@@ -27,6 +27,7 @@ npm-debug.log*
 *.points
 *.gml
 *.gfs
+!tools/gdal/*.gfs
 data/naisui_poc/01_raw/plateau/**/*.zip
 data/naisui_poc/01_raw/dem/
 data/naisui_poc/02_processed/depression_review/

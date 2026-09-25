@@ -1,0 +1,132 @@
+{
+  "phase": "PLATEAU導入計画 フェーズ1（入力ラスタ）",
+  "version": "plateau2025_v1",
+  "generated_at": "2026-09-25T05:58:07+00:00",
+  "inputs": {
+    "template": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_100mm_extreme\\dem_raw_epsg3857.tif",
+    "landuse": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\luse_2025.gpkg",
+    "buildings": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\bldg_2025_lod0.gpkg",
+    "category_mapping": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\landuse_category_mapping.csv",
+    "parameters": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\model_input\\landuse_parameter_mapping.csv"
+  },
+  "grid": {
+    "crs": "EPSG:3857",
+    "width": 1280,
+    "height": 1024,
+    "transform": [
+      4.777314267821202,
+      0.0,
+      15550349.034336258,
+      0.0,
+      -4.777314267822476,
+      4248675.780203236
+    ]
+  },
+  "supersample": 8,
+  "coefficient_definition": "流出係数は浸透損失を含む（工種別基礎流出係数）。浸透能は別に差し引かない。",
+  "no_data_fallback_coefficient": 1.0,
+  "parameter_table": [
+    {
+      "category": "建物・屋根",
+      "runoff_coefficient_base": 0.9,
+      "runoff_coefficient_low": 0.85,
+      "runoff_coefficient_high": 0.95,
+      "basis": "工種別基礎流出係数「屋根」0.85〜0.95（下水道施設計画・設計指針と解説。原典の版・表番号は要確認）",
+      "notes": "bldgの建物外形"
+    },
+    {
+      "category": "道路・舗装",
+      "runoff_coefficient_base": 0.85,
+      "runoff_coefficient_low": 0.8,
+      "runoff_coefficient_high": 0.9,
+      "basis": "工種別基礎流出係数「道路」0.80〜0.90（同上）",
+      "notes": "luse道路用地の建物外部分。街路樹帯を含む"
+    },
+    {
+      "category": "駐車場等の不浸透面",
+      "runoff_coefficient_base": 0.8,
+      "runoff_coefficient_low": 0.75,
+      "runoff_coefficient_high": 0.85,
+      "basis": "工種別基礎流出係数「その他の不透面」0.75〜0.85（同上）",
+      "notes": "住宅等の敷地の建物外部分を含む。この区分への割当て自体が仮定（landuse_category_mapping.csv の confidence=low）"
+    },
+    {
+      "category": "緑地",
+      "runoff_coefficient_base": 0.2,
+      "runoff_coefficient_low": 0.1,
+      "runoff_coefficient_high": 0.3,
+      "basis": "工種別基礎流出係数「間地」0.10〜0.30、「芝・樹木の多い公園」0.05〜0.25（同上）",
+      "notes": "公園・校庭・未利用地等。舗装広場を含むため公園の下限は使わない"
+    },
+    {
+      "category": "水面・その他",
+      "runoff_coefficient_base": 1.0,
+      "runoff_coefficient_low": 1.0,
+      "runoff_coefficient_high": 1.0,
+      "basis": "工種別基礎流出係数「水面」1.00。鉄道敷は指針に区分が無いため現行モデルと同じ1.0で保守側に置く",
+      "notes": "対象範囲では大半が鉄道敷"
+    }
+  ],
+  "landuse_features": 33370,
+  "unmapped_land_use_codes": [],
+  "buildings_in_grid": 85710,
+  "building_stats": {
+    "input_features": 103052,
+    "empty_geometries": 0,
+    "polygon_features": 103052,
+    "unique_buildings": 103052,
+    "id_field_found": 1,
+    "repaired_invalid_geometries": 0
+  },
+  "fraction_summary": {
+    "データ無し": {
+      "grid_mean": 0.0,
+      "target_towns_mean": 0.0
+    },
+    "建物・屋根": {
+      "grid_mean": 0.3915,
+      "target_towns_mean": 0.4467
+    },
+    "道路・舗装": {
+      "grid_mean": 0.1841,
+      "target_towns_mean": 0.179
+    },
+    "駐車場等の不浸透面": {
+      "grid_mean": 0.3168,
+      "target_towns_mean": 0.3037
+    },
+    "緑地": {
+      "grid_mean": 0.0718,
+      "target_towns_mean": 0.0525
+    },
+    "水面・その他": {
+      "grid_mean": 0.0358,
+      "target_towns_mean": 0.0181
+    }
+  },
+  "runoff_coefficient_summary": {
+    "base": {
+      "grid_mean": 0.8125,
+      "grid_min": 0.2,
+      "target_towns_mean": 0.8257,
+      "target_towns_p05": 0.5172
+    },
+    "low": {
+      "grid_mean": 0.7607,
+      "grid_min": 0.1,
+      "target_towns_mean": 0.774,
+      "target_towns_p05": 0.4398
+    },
+    "high": {
+      "grid_mean": 0.8642,
+      "grid_min": 0.3,
+      "target_towns_mean": 0.8774,
+      "target_towns_p05": 0.5914
+    }
+  },
+  "limitations": [
+    "土地利用は2021年調査、建物は2025年度整備であり、時点が一致しない。",
+    "建物データが格子全体を覆っていない場合、建物のあるべき区画は分類対応表の建物外区分で扱われる。building_statsと入力メッシュを確認すること。",
+    "区分ごとの係数は指針の標準値であり、品川区の実測で校正したものではない。"
+  ]
+}

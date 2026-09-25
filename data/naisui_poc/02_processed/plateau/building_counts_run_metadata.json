@@ -1,8 +1,8 @@
 {
   "phase": "PLATEAU導入計画 フェーズ0B",
-  "generated_at": "2026-09-25T04:56:04+00:00",
+  "generated_at": "2026-09-25T05:55:33+00:00",
   "inputs": {
-    "buildings": "data\\naisui_poc\\02_processed\\plateau\\bldg_2025.gpkg",
+    "buildings": "data\\naisui_poc\\02_processed\\plateau\\bldg_2025_lod0.gpkg",
     "buildings_layer": null,
     "towns": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\boundaries\\r2kb13109.shp",
     "history": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\shinagawa_inundation_history_target.csv",
@@ -18,13 +18,13 @@
   "work_crs": "EPSG:6677",
   "assignment_rule": "建物ポリゴンの重心が含まれる町丁目に割り当てる。重心が建物外の場合は建物内部の代表点を使う。",
   "building_stats": {
-    "input_features": 32173,
-    "empty_geometries": 832,
-    "polygon_features": 31341,
-    "unique_buildings": 31341,
+    "input_features": 103052,
+    "empty_geometries": 0,
+    "polygon_features": 103052,
+    "unique_buildings": 103052,
     "id_field_found": 1,
-    "repaired_invalid_geometries": 31341,
-    "centroid_outside_footprint": 98
+    "repaired_invalid_geometries": 0,
+    "centroid_outside_footprint": 490
   },
   "towns_without_buildings": [],
   "r7_rank_stable_between_class_bounds": true,

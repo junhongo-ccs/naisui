@@ -1,0 +1,88 @@
+{
+  "scenario_id": "sc_153mmh_24h_690mm_official",
+  "source_raster": "maximum_ponding_depth_m.tif",
+  "depth_threshold_m": 0.2,
+  "risk_label_note": "PoC用の簡易分類。行政の浸水想定・避難情報を置き換えない。",
+  "towns": {
+    "中延一丁目": {
+      "max_depth_m": 0.2199993133544922,
+      "mean_depth_m": 0.0038479848279337103,
+      "area_over_threshold_m2": 45.64546322706823,
+      "area_over_threshold_ratio": 0.0003872966692486445,
+      "risk_level": "軽微な湛水（注意）",
+      "peak_time_min": 720.0
+    },
+    "中延三丁目": {
+      "max_depth_m": 6.369998931884766,
+      "mean_depth_m": 0.01944127174865614,
+      "area_over_threshold_m2": 1392.186628425581,
+      "area_over_threshold_ratio": 0.012033931741960938,
+      "risk_level": "床上浸水相当（危険）",
+      "peak_time_min": 720.0
+    },
+    "中延二丁目": {
+      "max_depth_m": 3.049999237060547,
+      "mean_depth_m": 0.007716690471374265,
+      "area_over_threshold_m2": 912.9092645413646,
+      "area_over_threshold_ratio": 0.006816632583503749,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    },
+    "中延五丁目": {
+      "max_depth_m": 0.46000099182128906,
+      "mean_depth_m": 0.01007747681849975,
+      "area_over_threshold_m2": 1688.8821394015245,
+      "area_over_threshold_ratio": 0.01034097261039687,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    },
+    "中延六丁目": {
+      "max_depth_m": 0.7600002288818359,
+      "mean_depth_m": 0.022711903546180575,
+      "area_over_threshold_m2": 3628.814326551924,
+      "area_over_threshold_ratio": 0.025338645418326693,
+      "risk_level": "床上浸水相当（危険）",
+      "peak_time_min": 720.0
+    },
+    "中延四丁目": {
+      "max_depth_m": 0.6000003814697266,
+      "mean_depth_m": 0.008397011678994135,
+      "area_over_threshold_m2": 1848.641260696263,
+      "area_over_threshold_ratio": 0.009954528696079636,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    },
+    "二葉一丁目": {
+      "max_depth_m": 3.9800004959106445,
+      "mean_depth_m": 0.012073761300733345,
+      "area_over_threshold_m2": 2852.841451691764,
+      "area_over_threshold_ratio": 0.011448983330280271,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    },
+    "二葉三丁目": {
+      "max_depth_m": 0.8999996185302734,
+      "mean_depth_m": 0.034940277536615195,
+      "area_over_threshold_m2": 6230.605730494813,
+      "area_over_threshold_ratio": 0.04173035768878019,
+      "risk_level": "床上浸水相当（危険）",
+      "peak_time_min": 720.0
+    },
+    "二葉二丁目": {
+      "max_depth_m": 0.7899990081787109,
+      "mean_depth_m": 0.006474508208180855,
+      "area_over_threshold_m2": 1027.022922609035,
+      "area_over_threshold_ratio": 0.006648936170212766,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    },
+    "二葉四丁目": {
+      "max_depth_m": 0.6000003814697266,
+      "mean_depth_m": 0.010042096596778446,
+      "area_over_threshold_m2": 1985.5776503774678,
+      "area_over_threshold_ratio": 0.010735439289239881,
+      "risk_level": "床下浸水相当（警戒）",
+      "peak_time_min": 720.0
+    }
+  }
+}

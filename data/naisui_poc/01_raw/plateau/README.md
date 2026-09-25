@@ -8,6 +8,8 @@
 | ファイル | 内容 |
 | --- | --- |
 | `bldg/533935{26,27,28,36,37,38}_bldg_6697_op.gml` | 建築物モデル（CityGML、EPSG:6697）。中延・二葉＋100mバッファの約99.9%を含む3次メッシュ6面 |
+| `bldg/` のその他19ファイル | モデル格子（EPSG:3857、約6.1×4.9km）全体を覆うために追加した3次メッシュ（計25面、103,052棟） |
+| `catalog_query_model_grid_2026-09-25.json` | モデル格子範囲でのCityGMLカタログAPIの応答 |
 | `13109_shinagawa-ku_pref_2025_citygml_1_op_codelists.zip` | コードリスト（属性の数値コードの意味） |
 | `catalog_query_2026-09-25.json` | 取得時のCityGMLカタログAPIの応答（ファイルURL・地物数の記録） |
 | `urls.txt` | 実際に取得したURL、APIが示すファイルサイズ・地物数 |
@@ -28,12 +30,28 @@ https://api.plateauview.mlit.go.jp/datacatalog/citygml/r:139.70468,35.59983,139.
 
 - 6ファイルとも、`bldg:Building` の数がAPIの `features` と一致し、末尾の閉じタグまで揃っていた（計32,173棟）。ディスク上のサイズはAPIの `fileSize` より約1%大きいが、内容は完全である。
 - 東京都整備データのため、ファイルは区ではなくメッシュ単位で、区境の外の建物も含む。
-- `53393528`（大井・東大井周辺）の832棟はLOD2形状を持ち、ogr2ogrで変換すると形状が空になる。LOD0外形で確認したところ中延・二葉の町丁目内には1棟も無い（最短6m外）。
+- `53393528`（大井・東大井周辺）の832棟はLOD2形状を持ち、テンプレート無しのogr2ogrでは形状が空になる。LOD0外形で確認したところ中延・二葉の町丁目内には1棟も無い（最短6m外）。後に `bldg_2025_lod0.gpkg` へ切り替え、棟数・順位相関が変わらないことを確認した。
+- 追加19メッシュ（2026-09-25取得）も、全ファイルで `bldg:Building` の数がAPIの `features` と一致し、末尾まで揃っていた。
 - 建物の災害リスク属性は `uro:RiverFloodingRiskAttribute` のみで、内水専用の属性は無い。`description=14`（城南地区河川流域）、`adminType=2`（都道府県）、`scale=2`（L2想定最大規模）、`rank` は浸水深6区分（1: 0.5m未満 〜 6: 20m以上）。東京都の城南地区河川流域浸水予想区域図に由来するとみられ、校正値ではなく相対比較用として扱う。
 
 ## 変換
 
-QGIS 3.44同梱のGDAL 3.12で、6ファイルを一つのGeoPackageレイヤーへ結合した。
+### 建物外形（推奨、`bldg_2025_lod0.gpkg`）
+
+棟数集計・格子化には、`tools/gdal/plateau_bldg_lod0.gfs` を使って建物外形（`lod0RoofEdge`）だけを読んだ `bldg_2025_lod0.gpkg` を使う。LOD2を持つ建物も含め、25メッシュ103,052棟すべてに有効な外形がある。
+
+```bash
+export GDAL_DATA="C:/Program Files/QGIS 3.44.9/apps/gdal/share/gdal"
+out=data/naisui_poc/02_processed/plateau/bldg_2025_lod0.gpkg; mode=""
+for f in data/naisui_poc/01_raw/plateau/bldg/*.gml; do
+  ogr2ogr $mode -oo GFS_TEMPLATE=tools/gdal/plateau_bldg_lod0.gfs -oo EXPOSE_GML_ID=YES -f GPKG $out $f Building -nlt MULTIPOLYGON -dim XY -nln bldg
+  mode="-append"
+done
+```
+
+### 全属性（`bldg_2025.gpkg`）
+
+災害リスク属性などの属性を使う場合は、テンプレート無しで変換した `bldg_2025.gpkg` を使う。QGIS 3.44同梱のGDAL 3.12で、全メッシュを一つのGeoPackageレイヤーへ結合した。この読み方では形状に `lod1Solid` が選ばれ、LOD2を持つ建物（25メッシュで3,668棟）の形状が空になる。
 
 ```bash
 export GDAL_DATA="C:/Program Files/QGIS 3.44.9/apps/gdal/share/gdal"
@@ -69,4 +87,4 @@ ogr2ogr -oo EXPOSE_GML_ID=YES -f GPKG data/naisui_poc/02_processed/plateau/luse_
 
 - 中延・二葉＋100mバッファ（1.84km²）を4,784区画が**隙間・重複なく100%覆う**。分類不明（`orgLandUse` 0・90）は無い。
 - 建物外形が土地利用の「道路」区画に載る面積は建物面積の0.04%で、両データの位置ずれは小さい。
-- 5区分の面積割合（対象範囲全体）: 建物・屋根41.9%、道路・舗装18.2%、駐車場等の不浸透面30.3%、緑地7.7%、水面・その他1.9%。ただし31.9%は分類対応表で確度lowの仮定（主に住宅敷地の建物外部分を舗装とみなしたもの）に依存する。
+- 5区分の面積割合（対象範囲全体、建物はLOD0外形）: 建物・屋根42.3%、道路・舗装18.2%、駐車場等の不浸透面29.9%、緑地7.7%、水面・その他1.9%。ただし31.4%は分類対応表で確度lowの仮定（主に住宅敷地の建物外部分を舗装とみなしたもの）に依存する。

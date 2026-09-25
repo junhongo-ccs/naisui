@@ -76,6 +76,22 @@ def route_step(
     return stored
 
 
+def load_runoff_coefficient(path: Path, mosaic: DemMosaic) -> np.ndarray:
+    """セル別流出係数ラスタを読む。DEMと同じ格子でなければ誤った位置に係数が付くため拒否する。"""
+    with rasterio.open(path) as dataset:
+        same_grid = (
+            dataset.shape == mosaic.elevation_m.shape
+            and dataset.transform.almost_equals(mosaic.transform)
+            and str(dataset.crs) == str(mosaic.crs)
+        )
+        if not same_grid:
+            raise ValueError(f"Runoff coefficient raster does not match the DEM grid: {path}")
+        coefficient = dataset.read(1).astype(np.float64)
+    if not np.all(np.isfinite(coefficient)) or coefficient.min() < 0 or coefficient.max() > 1:
+        raise ValueError("Runoff coefficients must be finite and between 0 and 1.")
+    return coefficient
+
+
 def run(args: argparse.Namespace) -> None:
     config = json.loads(args.params.read_text(encoding="utf-8"))
     drainage_mmh = float(config["drainage_capacity"]["value_mm_per_hr"])
@@ -113,6 +129,10 @@ def run(args: argparse.Namespace) -> None:
     downstream_order = np.argsort(np.where(valid, np.asarray(conditioned_dem), -np.inf).ravel())[::-1]
 
     cell_area_m2 = abs(mosaic.transform.a * mosaic.transform.e)
+    # セル別流出係数（PLATEAU導入計画フェーズ1）。省略時は降雨シナリオの一律値を使う。
+    runoff_coefficient = load_runoff_coefficient(args.runoff_coefficient_raster, mosaic) if args.runoff_coefficient_raster else None
+    if runoff_coefficient is not None and any(row["runoff_coefficient"] != 1.0 for row in scenario):
+        raise ValueError("Use a scenario with runoff_coefficient=1.0 together with --runoff-coefficient-raster to avoid applying both.")
     storage_capacity_m3 = depression_depth_m * cell_area_m2
     stored_m3 = np.zeros_like(raw_dem, dtype=np.float64)
     maximum_depth_m = np.zeros_like(raw_dem, dtype=np.float32)
@@ -121,7 +141,10 @@ def run(args: argparse.Namespace) -> None:
         step_minutes = row.get("duration_min", args.step_minutes)
         step_hours = step_minutes / 60.0
         drainage_m3_per_cell = drainage_mmh / 1000.0 * step_hours * cell_area_m2
-        excess_m = max(0.0, row["rainfall_mm_hr"] * row["runoff_coefficient"] - row["capacity_mm_hr"]) / 1000.0 * step_hours
+        if runoff_coefficient is None:
+            excess_m = max(0.0, row["rainfall_mm_hr"] * row["runoff_coefficient"] - row["capacity_mm_hr"]) / 1000.0 * step_hours
+        else:
+            excess_m = np.maximum(0.0, row["rainfall_mm_hr"] * runoff_coefficient - row["capacity_mm_hr"]) / 1000.0 * step_hours
         local_excess_m3 = np.where(valid, excess_m * cell_area_m2, 0.0)
         stored_m3 = route_step(
             local_excess_m3, stored_m3, storage_capacity_m3, drainage_m3_per_cell, destination, downstream_order
@@ -159,6 +182,8 @@ def run(args: argparse.Namespace) -> None:
                 "model": "experimental pysheds D8 routing with depression capacity and overflow",
                 "depression_threshold_m": args.depression_threshold_m,
                 "max_depression_depth_m": args.max_depression_depth_m,
+                "runoff_coefficient_raster": str(args.runoff_coefficient_raster) if args.runoff_coefficient_raster else None,
+                "runoff_coefficient_mean": float(runoff_coefficient[valid].mean()) if runoff_coefficient is not None else None,
                 "limitations": [
                     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
                     "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。",
@@ -186,6 +211,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--depression-threshold-m", type=float, default=0.01)
     parser.add_argument("--max-depression-depth-m", type=float, help="感度分析用の凹地容量上限。省略時は上限なし。")
     parser.add_argument("--ponding-threshold-m", type=float, default=0.01)
+    parser.add_argument(
+        "--runoff-coefficient-raster",
+        type=Path,
+        help="セル別流出係数GeoTIFF（tools/rasterize_surface_parameters.py の出力）。DEMと同じ格子であること。",
+    )
     return parser.parse_args()
 
 

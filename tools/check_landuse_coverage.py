@@ -189,7 +189,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--landuse", type=Path, default=processed / "plateau/luse_2025.gpkg")
     parser.add_argument("--landuse-layer", help="GeoPackage内の土地利用レイヤー名（複数レイヤーがある場合）")
-    parser.add_argument("--buildings", type=Path, default=processed / "plateau/bldg_2025.gpkg")
+    parser.add_argument("--buildings", type=Path, default=processed / "plateau/bldg_2025_lod0.gpkg")
     parser.add_argument("--buildings-layer", help="GeoPackage内の建築物レイヤー名（複数レイヤーがある場合）")
     parser.add_argument("--id-field", default="gml_id", help="建物の重複除去に使うID列")
     parser.add_argument("--mapping", type=Path, default=processed / "plateau/landuse_category_mapping.csv")
