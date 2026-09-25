@@ -40,6 +40,8 @@ def main() -> None:
                 runoff_coefficient_raster=None,
                 building_fraction_raster=None,
                 building_threshold=0.5,
+                road_fraction_raster=None,
+                road_threshold=0.5,
             )
         )
 

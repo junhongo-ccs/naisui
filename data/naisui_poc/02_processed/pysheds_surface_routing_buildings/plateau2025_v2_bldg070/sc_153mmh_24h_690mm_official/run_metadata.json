@@ -10,14 +10,14 @@
     15.061348408460617
   ],
   "cell_area_note": "体積・面積は楕円体上の地上面積で計算（EPSG:3857の名目画素面積は使わない）",
-  "building_blocking": {
+  "surface_obstacles": {
     "building_fraction_raster": "data\\naisui_poc\\02_processed\\model_input\\surface_fraction_plateau2025_v1.tif",
     "building_threshold": 0.7,
     "building_cells": 399591,
     "building_cell_share": 0.3087602255947593,
-    "rerouted_cells": 202881,
-    "open_cells_still_draining_into_buildings": 23170,
-    "storage_removed_m3": 171474.2245774436
+    "storage_removed_m3": 171474.2245774436,
+    "rerouted_cells": 194492,
+    "open_cells_still_draining_into_buildings": 23170
   },
   "limitations": [
     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",

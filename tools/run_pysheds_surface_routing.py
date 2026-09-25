@@ -85,35 +85,58 @@ def route_step(
 D8_DISTANCE = {code: (2**0.5 if row_offset and col_offset else 1.0) for code, (row_offset, col_offset) in D8_OFFSETS.items()}
 
 
-def avoid_buildings(
-    destination: np.ndarray, conditioned_dem: np.ndarray, building: np.ndarray, valid: np.ndarray
-) -> tuple[np.ndarray, int, int]:
-    """建物セルへ水を流し込まないよう、D8の流下先を付け替える（PLATEAU導入計画フェーズ2）。
+def reroute_flow(
+    destination: np.ndarray,
+    conditioned_dem: np.ndarray,
+    valid: np.ndarray,
+    blocked: np.ndarray,
+    preferred: np.ndarray | None = None,
+) -> tuple[np.ndarray, dict[str, int]]:
+    """建物・道路に応じてD8の流下先を付け替える（PLATEAU導入計画フェーズ2）。
 
-    各セルから、整形DEMで厳密に低い建物以外の隣接セルのうち最も急な方向へ流す。
-    そのようなセルが無い場合は元の流下先を残す。流下先は常に整形DEMで低いセルなので、
-    downstream_order（整形DEMの降順）の処理順は保たれ、循環も生じない。
+    候補は、整形DEMで厳密に低く、blocked（建物）でない隣接セル。preferred（道路）の候補が
+    あれば、その中で最も急な方向へ流す。無ければ、元の流下先が建物でない限りそのまま残し、
+    建物なら候補全体で最も急な方向へ流す。候補が無い場合は元の流下先を残す。流下先は常に整形DEMで低いセルなので、downstream_order
+    （整形DEMの降順）の処理順は保たれ、循環も生じない。
     """
     rows, cols = np.indices(conditioned_dem.shape)
+    height, width = conditioned_dem.shape
     best_slope = np.zeros(conditioned_dem.shape, dtype=np.float64)
     best_target = np.full(conditioned_dem.shape, -1, dtype=np.int64)
+    preferred_slope = np.zeros(conditioned_dem.shape, dtype=np.float64)
+    preferred_target = np.full(conditioned_dem.shape, -1, dtype=np.int64)
     for code, (row_offset, col_offset) in D8_OFFSETS.items():
         target_row = rows + row_offset
         target_col = cols + col_offset
-        inside = (target_row >= 0) & (target_row < rows.shape[0]) & (target_col >= 0) & (target_col < rows.shape[1])
-        target_row = np.clip(target_row, 0, rows.shape[0] - 1)
-        target_col = np.clip(target_col, 0, rows.shape[1] - 1)
+        inside = (target_row >= 0) & (target_row < height) & (target_col >= 0) & (target_col < width)
+        target_row = np.clip(target_row, 0, height - 1)
+        target_col = np.clip(target_col, 0, width - 1)
+        target_flat = target_row * width + target_col
         slope = (conditioned_dem - conditioned_dem[target_row, target_col]) / D8_DISTANCE[code]
-        usable = inside & valid & valid[target_row, target_col] & ~building[target_row, target_col] & (slope > best_slope)
+        candidate = inside & valid & valid[target_row, target_col] & ~blocked[target_row, target_col]
+        usable = candidate & (slope > best_slope)
         best_slope = np.where(usable, slope, best_slope)
-        best_target = np.where(usable, target_row * rows.shape[1] + target_col, best_target)
-    rerouted = (best_target >= 0) & (best_target != destination) & valid
-    into_building = valid & (destination >= 0) & building.ravel()[np.maximum(destination, 0)].reshape(destination.shape)
-    new_destination = np.where(best_target >= 0, best_target, destination)
+        best_target = np.where(usable, target_flat, best_target)
+        if preferred is not None:
+            usable = candidate & preferred[target_row, target_col] & (slope > preferred_slope)
+            preferred_slope = np.where(usable, slope, preferred_slope)
+            preferred_target = np.where(usable, target_flat, preferred_target)
+    # 付け替えは最小限にする。道路へ流せない場合、元の流下先が建物でなければ元のまま残す。
+    original_target = np.maximum(destination, 0)
+    into_blocked = valid & (destination >= 0) & blocked.ravel()[original_target].reshape(destination.shape)
+    original_ok = valid & (destination >= 0) & ~into_blocked
+    chosen = np.where(preferred_target >= 0, preferred_target, np.where(original_ok, destination, best_target))
+    new_destination = np.where(chosen >= 0, chosen, destination)
     new_destination[~valid] = -1
-    # 建物以外のセルで、低い建物以外の隣接セルが無いため建物へ流れ続けるもの（格子の粗さによる近似の限界）。
-    still_into_building = int(np.count_nonzero(into_building & (best_target < 0) & ~building))
-    return new_destination, int(np.count_nonzero(rerouted)), still_into_building
+    stats = {
+        "rerouted_cells": int(np.count_nonzero(valid & (new_destination != destination))),
+        # 建物以外のセルで、低い建物以外の隣接セルが無いため建物へ流れ続けるもの（格子の粗さによる近似の限界）。
+        "open_cells_still_draining_into_buildings": int(np.count_nonzero(into_blocked & (chosen < 0) & ~blocked)),
+    }
+    if preferred is not None:
+        was_preferred = (destination >= 0) & preferred.ravel()[original_target].reshape(destination.shape)
+        stats["cells_steered_to_roads"] = int(np.count_nonzero(valid & (preferred_target >= 0) & ~was_preferred))
+    return new_destination, stats
 
 
 def load_runoff_coefficient(path: Path, mosaic: DemMosaic) -> np.ndarray:
@@ -132,18 +155,18 @@ def load_runoff_coefficient(path: Path, mosaic: DemMosaic) -> np.ndarray:
     return coefficient
 
 
-def load_building_fraction(path: Path, mosaic: DemMosaic) -> np.ndarray:
-    """surface_fraction の「建物・屋根」バンドを読む。DEMと同じ格子であることを確認する。"""
+def load_fraction_band(path: Path, mosaic: DemMosaic, band_name: str) -> np.ndarray:
+    """surface_fraction の指定区分のバンドを読む。DEMと同じ格子であることを確認する。"""
     with rasterio.open(path) as dataset:
         if not (
             dataset.shape == mosaic.elevation_m.shape
             and dataset.transform.almost_equals(mosaic.transform)
             and str(dataset.crs) == str(mosaic.crs)
         ):
-            raise ValueError(f"Building fraction raster does not match the DEM grid: {path}")
-        bands = [index for index, name in enumerate(dataset.descriptions, start=1) if name == "建物・屋根"]
+            raise ValueError(f"Surface fraction raster does not match the DEM grid: {path}")
+        bands = [index for index, name in enumerate(dataset.descriptions, start=1) if name == band_name]
         if not bands:
-            raise ValueError(f"No '建物・屋根' band in {path}")
+            raise ValueError(f"No '{band_name}' band in {path}")
         return dataset.read(bands[0]).astype(np.float64)
 
 
@@ -190,23 +213,35 @@ def run(args: argparse.Namespace) -> None:
     if runoff_coefficient is not None and any(row["runoff_coefficient"] != 1.0 for row in scenario):
         raise ValueError("Use a scenario with runoff_coefficient=1.0 together with --runoff-coefficient-raster to avoid applying both.")
     storage_capacity_m3 = depression_depth_m * cell_area_m2
-    # 建物による流下の遮断（PLATEAU導入計画フェーズ2）。建物セルは貯留せず、水を流し込まない。
-    building_stats: dict[str, object] | None = None
-    if args.building_fraction_raster:
-        building = (load_building_fraction(args.building_fraction_raster, mosaic) >= args.building_threshold) & valid
-        destination, rerouted_cells, still_into_building = avoid_buildings(
-            destination, np.asarray(conditioned_dem, dtype=np.float64), building, valid
+    # 建物・道路による流下の変更（PLATEAU導入計画フェーズ2）。建物セルは貯留せず、水を流し込まない。
+    # 道路セルは、低い隣接セルに道路があればそちらへ優先して流す（地形は変えない）。
+    surface_stats: dict[str, object] | None = None
+    if args.building_fraction_raster or args.road_fraction_raster:
+        building = np.zeros_like(valid)
+        road: np.ndarray | None = None
+        surface_stats = {}
+        if args.building_fraction_raster:
+            building = (load_fraction_band(args.building_fraction_raster, mosaic, "建物・屋根") >= args.building_threshold) & valid
+            storage_capacity_m3 = np.where(building, 0.0, storage_capacity_m3)
+            surface_stats |= {
+                "building_fraction_raster": str(args.building_fraction_raster),
+                "building_threshold": args.building_threshold,
+                "building_cells": int(np.count_nonzero(building)),
+                "building_cell_share": float(np.count_nonzero(building) / np.count_nonzero(valid)),
+                "storage_removed_m3": float(np.sum(depression_depth_m[building] * cell_area_m2[building])),
+            }
+        if args.road_fraction_raster:
+            road = (load_fraction_band(args.road_fraction_raster, mosaic, "道路・舗装") >= args.road_threshold) & valid & ~building
+            surface_stats |= {
+                "road_fraction_raster": str(args.road_fraction_raster),
+                "road_threshold": args.road_threshold,
+                "road_cells": int(np.count_nonzero(road)),
+                "road_cell_share": float(np.count_nonzero(road) / np.count_nonzero(valid)),
+            }
+        destination, reroute_stats = reroute_flow(
+            destination, np.asarray(conditioned_dem, dtype=np.float64), valid, building, road
         )
-        storage_capacity_m3 = np.where(building, 0.0, storage_capacity_m3)
-        building_stats = {
-            "building_fraction_raster": str(args.building_fraction_raster),
-            "building_threshold": args.building_threshold,
-            "building_cells": int(np.count_nonzero(building)),
-            "building_cell_share": float(np.count_nonzero(building) / np.count_nonzero(valid)),
-            "rerouted_cells": rerouted_cells,
-            "open_cells_still_draining_into_buildings": still_into_building,
-            "storage_removed_m3": float(np.sum(depression_depth_m[building] * cell_area_m2[building])),
-        }
+        surface_stats |= reroute_stats
     stored_m3 = np.zeros_like(raw_dem, dtype=np.float64)
     maximum_depth_m = np.zeros_like(raw_dem, dtype=np.float32)
     summary: list[dict[str, float]] = []
@@ -268,7 +303,7 @@ def run(args: argparse.Namespace) -> None:
                 "runoff_coefficient_mean": float(runoff_coefficient[valid].mean()) if runoff_coefficient is not None else None,
                 "cell_area_m2_range": [float(cell_area_m2.min()), float(cell_area_m2.max())],
                 "cell_area_note": "体積・面積は楕円体上の地上面積で計算（EPSG:3857の名目画素面積は使わない）",
-                "building_blocking": building_stats,
+                "surface_obstacles": surface_stats,
                 "limitations": [
                     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
                     "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。",
@@ -303,6 +338,12 @@ def parse_args() -> argparse.Namespace:
         "指定すると建物セルへの流入と貯留を止める。",
     )
     parser.add_argument("--building-threshold", type=float, default=0.5, help="建物セルとみなす建物・屋根の面積割合")
+    parser.add_argument(
+        "--road-fraction-raster",
+        type=Path,
+        help="道路・舗装の面積割合を含むGeoTIFF（surface_fraction）。指定すると道路セルへ優先して流す。",
+    )
+    parser.add_argument("--road-threshold", type=float, default=0.5, help="道路セルとみなす道路・舗装の面積割合")
     parser.add_argument(
         "--runoff-coefficient-raster",
         type=Path,
