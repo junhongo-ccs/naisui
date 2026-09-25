@@ -10,6 +10,8 @@
 
 鉄道用地（PLATEAU土地利用の「鉄道・港湾等」）の中は、たまりやすい場所・くぼ地の集計から除き、別に記録する。
 DEMは線路の掘割の底を地面として拾うため、住宅地の浸水とは別物のくぼ地が現れる（中延三丁目の池上線の掘割）。
+道路のアンダーパス（OSMで tunnel=yes の道路と、その出入口の坂）も同様に除き、「アンダーパス」として別に記録する
+（二葉一丁目のふたばトンネル）。線路の下をくぐる低い道路は、それ自体が大雨時に注意すべき場所である。
 - 雨水がたまりやすい場所（採用モデルの最大湛水深が PONDING_MIN_M 以上のセル）:
   - 名前付きの通り（OpenStreetMap）の沿道（両側 CORRIDOR_M）に、町内のたまりやすい面積の何割があるか、
     沿道が周り（外側 RING_M まで）より低いか、公式の浸水想定区域が重なるか
@@ -59,6 +61,8 @@ DEPRESSION_MIN_M = 0.10  # くぼ地とみなす窪地の深さ
 RAILWAY_LAND_USE = 5200  # PLATEAU土地利用（東京都 orgLandUse）の「鉄道・港湾等」
 # 掘割の縁は土地利用の鉄道区画より1セル（約3.9m）ほど外まで地形データに現れるため、その分だけ広げて除く
 RAILWAY_BUFFER_M = 6.0
+# 道路トンネルの出入口の坂（掘割）まで含めて除くための幅。ふたばトンネルでは窪みの最深部が出入口から3〜5mにある
+UNDERPASS_BUFFER_M = 20.0
 
 # 人が現地・地図で確認した事項。データだけでは判断できない解釈を、確認日と一緒に残す。
 FIELD_NOTES: dict[str, list[dict[str, str]]] = {
@@ -67,6 +71,14 @@ FIELD_NOTES: dict[str, list[dict[str, str]]] = {
             "note": "北西にある深さ約6.5mの窪み（約128m×93m、北緯35.6085・東経139.7096付近）は、池上線が一段低く掘られた掘割を"
             "地形データが拾ったもので、住宅地のくぼ地ではない",
             "confirmed_by": "ユーザー（現地の状況の確認）",
+            "confirmed_on": "2026-09-25",
+        }
+    ],
+    "二葉一丁目": [
+        {
+            "note": "鮫洲大山線の上にある深さ約7.3m・約2.3mの窪み（北緯35.6084・東経139.7256付近）は、線路の下をくぐる道路トンネル"
+            "「ふたばトンネル」の出入口の坂を地形データが拾ったもの",
+            "confirmed_by": "ユーザー（地名の指摘）。OSMのふたばトンネル（tunnel=yes、layer=-1）の出入口から3〜5mの位置であることを確認",
             "confirmed_on": "2026-09-25",
         }
     ],
@@ -93,6 +105,21 @@ def load_roads(path: Path) -> gpd.GeoDataFrame:
         rows.append({"name": name, "geometry": LineString([(p["lon"], p["lat"]) for p in element["geometry"]])})
     roads = gpd.GeoDataFrame(rows, crs="EPSG:4326").to_crs(WORK_CRS)
     return roads.dissolve(by="name", as_index=False)
+
+
+def load_underpasses(path: Path) -> gpd.GeoDataFrame:
+    """線路などの下をくぐる道路トンネル（OSMで tunnel=yes の道路）。"""
+    osm = json.loads(path.read_text(encoding="utf-8"))
+    rows = [
+        {"name": element["tags"].get("name", ""), "geometry": LineString([(p["lon"], p["lat"]) for p in element["geometry"]])}
+        for element in osm["elements"]
+        if element.get("tags", {}).get("tunnel") == "yes"
+        and element["tags"].get("highway")
+        and len(element.get("geometry", [])) >= 2
+    ]
+    if not rows:
+        return gpd.GeoDataFrame({"name": []}, geometry=[], crs=WORK_CRS)
+    return gpd.GeoDataFrame(rows, crs="EPSG:4326").to_crs(WORK_CRS).dissolve(by="name", as_index=False)
 
 
 def load_culvert(path: Path) -> object:
@@ -128,7 +155,7 @@ def nearest(gdf: gpd.GeoDataFrame, geometry: object) -> dict[str, object]:
 class Grid:
     """モデル格子（EPSG:3857）上でのマスクと面積の計算。"""
 
-    def __init__(self, depth_path: Path, dem_path: Path, landuse_path: Path) -> None:
+    def __init__(self, depth_path: Path, dem_path: Path, landuse_path: Path, underpasses: gpd.GeoDataFrame) -> None:
         with rasterio.open(depth_path) as dataset:
             self.depth = dataset.read(1).astype(np.float64)
             self.transform = dataset.transform
@@ -144,8 +171,12 @@ class Grid:
         self.valid_dem = self.dem > -100
         # 鉄道用地は、たまりやすい場所・くぼ地の集計から除く（掘割の底を地形として拾うため）
         self.railway = self._railway_mask(landuse_path)
+        self.underpass = (
+            self.mask(underpasses.geometry.buffer(UNDERPASS_BUFFER_M).union_all()) if len(underpasses) else np.zeros_like(self.railway)
+        )
+        self.excluded = self.railway | self.underpass
         self.ponding_all = self.depth >= PONDING_MIN_M
-        self.ponding = self.ponding_all & ~self.railway
+        self.ponding = self.ponding_all & ~self.excluded
 
     def _railway_mask(self, landuse_path: Path) -> np.ndarray:
         bounds = rasterio.transform.array_bounds(self.depth.shape[0], self.depth.shape[1], self.transform)
@@ -238,6 +269,7 @@ def town_facts(
     shelters: gpd.GeoDataFrame,
     sandbags: gpd.GeoDataFrame,
     culvert: object,
+    underpasses: gpd.GeoDataFrame,
 ) -> dict[str, object]:
     town_mask = grid.mask(town)
     elevations = grid.dem[town_mask & grid.valid_dem]
@@ -354,10 +386,22 @@ def town_facts(
         "depression_area_m2": round(float(grid.area[railway_depression].sum())),
         "depression_depth_max_m": round(float(grid.depression[railway_depression].max()), 2) if railway_depression.any() else 0.0,
     }
+    underpass_rows = []
+    for _, underpass in underpasses.iterrows():
+        zone = underpass.geometry.buffer(UNDERPASS_BUFFER_M)
+        if not zone.intersects(town):
+            continue
+        zone_mask = grid.mask(zone.intersection(town))
+        underpass_rows.append({
+            "name": underpass["name"],
+            "depression_depth_max_m": round(float(grid.depression[zone_mask].max()), 2) if zone_mask.any() else 0.0,
+            "ponding_area_m2": round(float(grid.area[zone_mask & grid.ponding_all].sum())),
+        })
+    facts["underpasses"] = underpass_rows
     facts["field_notes"] = FIELD_NOTES.get(name, [])
 
     # くぼ地（窪地の深さ）と谷筋（上流の集水面積）。鉄道用地は除く
-    depression_mask = town_mask & (grid.depression >= DEPRESSION_MIN_M) & ~grid.railway
+    depression_mask = town_mask & (grid.depression >= DEPRESSION_MIN_M) & ~grid.excluded
     depression_labels, depression_count = ndimage.label(depression_mask, structure=np.ones((3, 3), dtype=bool))
     sizes = ndimage.sum(np.ones_like(grid.depression), depression_labels, range(1, depression_count + 1)) if depression_count else []
     upstream_m2 = grid.upstream_cells * grid.area
@@ -423,6 +467,11 @@ def to_markdown(all_facts: list[dict[str, object]], metadata: dict[str, object])
             f"（中のたまりやすい場所 {facts['railway_excluded']['ponding_area_m2']:,}m²、"
             f"くぼ地 {facts['railway_excluded']['depression_area_m2']:,}m²・最深 {facts['railway_excluded']['depression_depth_max_m']}m）",
         ]
+        for underpass in facts["underpasses"]:
+            lines.append(
+                f"- アンダーパス: {underpass['name']}（線路などの下をくぐる道路。地形データでは周りより最大"
+                f"{underpass['depression_depth_max_m']}m低い。集計から除外）"
+            )
         for note in facts["field_notes"]:
             lines.append(f"- 確認事項: {note['note']}（{note['confirmed_by']}、{note['confirmed_on']}）")
         lines += [
@@ -477,7 +526,8 @@ def to_markdown(all_facts: list[dict[str, object]], metadata: dict[str, object])
 
 def run(args: argparse.Namespace) -> None:
     towns = load_towns(args.towns, "S_NAME", TARGET_TOWN_PATTERN)
-    grid = Grid(args.depth, args.dem, args.landuse)
+    underpasses = load_underpasses(args.roads)
+    grid = Grid(args.depth, args.dem, args.landuse, underpasses)
     roads = load_roads(args.roads)
     hazard = gpd.read_file(args.hazard).to_crs(WORK_CRS)
     records = read_records(args.records)
@@ -486,7 +536,7 @@ def run(args: argparse.Namespace) -> None:
     culvert = load_culvert(args.roads)
 
     all_facts = [
-        town_facts(name, geometry, grid, roads, hazard, records, shelters, sandbags, culvert)
+        town_facts(name, geometry, grid, roads, hazard, records, shelters, sandbags, culvert, underpasses)
         for name, geometry in sorted(zip(towns["town"], towns.geometry), key=lambda item: item[0])
     ]
     metadata = {
@@ -501,6 +551,7 @@ def run(args: argparse.Namespace) -> None:
             "公式の浸水想定区域は公式PDFを地理参照して作った派生データで、位置の誤差は約4.5m（最大約7.8m）。",
             "道路名は © OpenStreetMap contributors（ODbL）。名前の無い路地は含まれない。",
             "鉄道用地（PLATEAU土地利用の鉄道・港湾等、縁を6m広げる）の中は、たまりやすい場所・くぼ地の集計から除いている（railway_excluded に別記）。",
+            "道路のアンダーパス（OSMで tunnel=yes の道路の周り20m）も集計から除き、underpasses に別記している。",
         ],
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-09-25T10:04:53+00:00",
+    "generated_at": "2026-09-25T10:15:57+00:00",
     "model_version": "plateau2025_v3_road050",
     "inputs": {
       "depth": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\pysheds_surface_routing_roads\\plateau2025_v3_road050\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
@@ -20,7 +20,8 @@
       "雨水がたまりやすい場所は校正前のスクリーニングモデルの結果であり、実際の浸水予報ではない。",
       "公式の浸水想定区域は公式PDFを地理参照して作った派生データで、位置の誤差は約4.5m（最大約7.8m）。",
       "道路名は © OpenStreetMap contributors（ODbL）。名前の無い路地は含まれない。",
-      "鉄道用地（PLATEAU土地利用の鉄道・港湾等、縁を6m広げる）の中は、たまりやすい場所・くぼ地の集計から除いている（railway_excluded に別記）。"
+      "鉄道用地（PLATEAU土地利用の鉄道・港湾等、縁を6m広げる）の中は、たまりやすい場所・くぼ地の集計から除いている（railway_excluded に別記）。",
+      "道路のアンダーパス（OSMで tunnel=yes の道路の周り20m）も集計から除き、underpasses に別記している。"
     ]
   },
   "towns": [
@@ -92,6 +93,7 @@
         "depression_area_m2": 0,
         "depression_depth_max_m": 0.0
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0097,
@@ -192,6 +194,7 @@
         "depression_area_m2": 2122,
         "depression_depth_max_m": 6.49
       },
+      "underpasses": [],
       "field_notes": [
         {
           "note": "北西にある深さ約6.5mの窪み（約128m×93m、北緯35.6085・東経139.7096付近）は、池上線が一段低く掘られた掘割を地形データが拾ったもので、住宅地のくぼ地ではない",
@@ -327,6 +330,7 @@
         "depression_area_m2": 120,
         "depression_depth_max_m": 1.62
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0224,
@@ -542,6 +546,7 @@
         "depression_area_m2": 75,
         "depression_depth_max_m": 0.12
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0503,
@@ -739,6 +744,7 @@
         "depression_area_m2": 0,
         "depression_depth_max_m": 0.0
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.154,
@@ -887,6 +893,7 @@
         "depression_area_m2": 512,
         "depression_depth_max_m": 0.21
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0438,
@@ -927,29 +934,16 @@
       },
       "ponding": {
         "threshold_m": 0.1,
-        "area_m2": 4682,
-        "share_of_town": 0.0292,
-        "depth_p95_m": 0.51
+        "area_m2": 4290,
+        "share_of_town": 0.0268,
+        "depth_p95_m": 0.38
       },
       "roads": [
-        {
-          "road": "鮫洲大山線",
-          "length_in_town_m": 912,
-          "ponding_area_m2": 557,
-          "share_of_town_ponding": 0.119,
-          "ponding_share_of_corridor": 0.041,
-          "corridor_elevation_m": 16.6,
-          "surrounding_elevation_m": 14.62,
-          "lower_than_surroundings_m": -1.98,
-          "elevation_percentile_in_town": 69,
-          "official_hazard_share_of_corridor": 0.0,
-          "official_hazard_classes": []
-        },
         {
           "road": "立会道路",
           "length_in_town_m": 95,
           "ponding_area_m2": 241,
-          "share_of_town_ponding": 0.051,
+          "share_of_town_ponding": 0.056,
           "ponding_share_of_corridor": 0.152,
           "corridor_elevation_m": 12.05,
           "surrounding_elevation_m": 12.14,
@@ -962,15 +956,15 @@
           ]
         },
         {
-          "road": "ふたばトンネル",
-          "length_in_town_m": 61,
-          "ponding_area_m2": 226,
-          "share_of_town_ponding": 0.048,
-          "ponding_share_of_corridor": 0.142,
-          "corridor_elevation_m": 17.94,
-          "surrounding_elevation_m": 18.45,
-          "lower_than_surroundings_m": 0.51,
-          "elevation_percentile_in_town": 74,
+          "road": "鮫洲大山線",
+          "length_in_town_m": 912,
+          "ponding_area_m2": 166,
+          "share_of_town_ponding": 0.039,
+          "ponding_share_of_corridor": 0.012,
+          "corridor_elevation_m": 16.6,
+          "surrounding_elevation_m": 14.62,
+          "lower_than_surroundings_m": -1.98,
+          "elevation_percentile_in_town": 69,
           "official_hazard_share_of_corridor": 0.0,
           "official_hazard_classes": []
         },
@@ -978,7 +972,7 @@
           "road": "四間通り",
           "length_in_town_m": 242,
           "ponding_area_m2": 30,
-          "share_of_town_ponding": 0.006,
+          "share_of_town_ponding": 0.007,
           "ponding_share_of_corridor": 0.011,
           "corridor_elevation_m": 16.64,
           "surrounding_elevation_m": 16.06,
@@ -991,7 +985,7 @@
           "road": "三間通り",
           "length_in_town_m": 458,
           "ponding_area_m2": 15,
-          "share_of_town_ponding": 0.003,
+          "share_of_town_ponding": 0.004,
           "ponding_share_of_corridor": 0.002,
           "corridor_elevation_m": 12.56,
           "surrounding_elevation_m": 12.85,
@@ -1001,15 +995,28 @@
           "official_hazard_classes": [
             "0.1m以上0.5m未満"
           ]
+        },
+        {
+          "road": "ふたばトンネル",
+          "length_in_town_m": 61,
+          "ponding_area_m2": 0,
+          "share_of_town_ponding": 0.0,
+          "ponding_share_of_corridor": 0.0,
+          "corridor_elevation_m": 17.94,
+          "surrounding_elevation_m": 18.45,
+          "lower_than_surroundings_m": 0.51,
+          "elevation_percentile_in_town": 74,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
         }
       ],
       "off_road_ponding": {
-        "share_of_town_ponding": 0.82,
+        "share_of_town_ponding": 0.895,
         "cluster_count": 23,
         "largest": [
           {
             "area_m2": 1295,
-            "share_of_town_ponding": 0.277,
+            "share_of_town_ponding": 0.302,
             "direction_in_town": "東",
             "nearest_named_road": "立会道路",
             "nearest_named_road_m": 29,
@@ -1018,7 +1025,7 @@
           },
           {
             "area_m2": 978,
-            "share_of_town_ponding": 0.209,
+            "share_of_town_ponding": 0.228,
             "direction_in_town": "東",
             "nearest_named_road": "立会道路",
             "nearest_named_road_m": 48,
@@ -1027,7 +1034,7 @@
           },
           {
             "area_m2": 301,
-            "share_of_town_ponding": 0.064,
+            "share_of_town_ponding": 0.07,
             "direction_in_town": "東",
             "nearest_named_road": "三間通り",
             "nearest_named_road_m": 39,
@@ -1046,7 +1053,7 @@
       },
       "ponding_in_official_hazard": {
         "area_m2": 858,
-        "share_of_ponding": 0.183
+        "share_of_ponding": 0.2
       },
       "culvert": {
         "passes_through_town": true,
@@ -1056,14 +1063,14 @@
           {
             "direction": "南東",
             "share_of_town_area": 0.001,
-            "share_of_town_ponding": 0.013,
+            "share_of_town_ponding": 0.014,
             "share_of_town_official_hazard": 0.0,
             "bands": []
           },
           {
             "direction": "北西",
             "share_of_town_area": 0.999,
-            "share_of_town_ponding": 0.987,
+            "share_of_town_ponding": 0.986,
             "share_of_town_official_hazard": 1.0,
             "bands": [
               {
@@ -1091,7 +1098,7 @@
                 "from_m": 200,
                 "to_m": 300,
                 "elevation_median_m": 17.81,
-                "ponding_share": 0.018,
+                "ponding_share": 0.016,
                 "official_hazard_share": 0.01
               }
             ]
@@ -1104,11 +1111,24 @@
         "depression_area_m2": 0,
         "depression_depth_max_m": 0.0
       },
-      "field_notes": [],
+      "underpasses": [
+        {
+          "name": "ふたばトンネル",
+          "depression_depth_max_m": 7.27,
+          "ponding_area_m2": 391
+        }
+      ],
+      "field_notes": [
+        {
+          "note": "鮫洲大山線の上にある深さ約7.3m・約2.3mの窪み（北緯35.6084・東経139.7256付近）は、線路の下をくぐる道路トンネル「ふたばトンネル」の出入口の坂を地形データが拾ったもの",
+          "confirmed_by": "ユーザー（地名の指摘）。OSMのふたばトンネル（tunnel=yes、layer=-1）の出入口から3〜5mの位置であることを確認",
+          "confirmed_on": "2026-09-25"
+        }
+      ],
       "terrain": {
-        "depression_share_of_town": 0.0675,
-        "depression_count_2cells_or_more": 12,
-        "depression_depth_p95_m": 2.79,
+        "depression_share_of_town": 0.0606,
+        "depression_count_2cells_or_more": 11,
+        "depression_depth_p95_m": 0.47,
         "ponding_in_depressions_share": 1.0,
         "max_upstream_area_ha": 487.1,
         "max_upstream_direction_in_town": "東"
@@ -1280,6 +1300,7 @@
         "depression_area_m2": 708,
         "depression_depth_max_m": 0.9
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.2166,
@@ -1455,6 +1476,7 @@
         "depression_area_m2": 0,
         "depression_depth_max_m": 0.0
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0237,
@@ -1657,6 +1679,7 @@
         "depression_area_m2": 0,
         "depression_depth_max_m": 0.0
       },
+      "underpasses": [],
       "field_notes": [],
       "terrain": {
         "depression_share_of_town": 0.0559,
