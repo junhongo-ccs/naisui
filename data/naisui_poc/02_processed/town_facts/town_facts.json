@@ -1,0 +1,1691 @@
+{
+  "metadata": {
+    "generated_at": "2026-09-25T10:04:53+00:00",
+    "model_version": "plateau2025_v3_road050",
+    "inputs": {
+      "depth": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\pysheds_surface_routing_roads\\plateau2025_v3_road050\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
+      "dem": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_100mm_extreme\\dem_raw_epsg3857.tif",
+      "roads": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\osm\\named_roads_2026-09-25.json",
+      "landuse": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\luse_2025.gpkg",
+      "hazard": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\evaluation\\hazard_shinagawa_normalized.gpkg",
+      "records": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\inundation_history_normalized.csv",
+      "shelters": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\shelter\\shelter_locations_nakanobu_futaba.geojson",
+      "sandbags": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\shelter\\sandbag_locations_nakanobu_futaba.geojson",
+      "towns": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\boundaries\\r2kb13109.shp"
+    },
+    "ponding_min_m": 0.1,
+    "corridor_m": 10.0,
+    "ring_m": 60.0,
+    "notes": [
+      "雨水がたまりやすい場所は校正前のスクリーニングモデルの結果であり、実際の浸水予報ではない。",
+      "公式の浸水想定区域は公式PDFを地理参照して作った派生データで、位置の誤差は約4.5m（最大約7.8m）。",
+      "道路名は © OpenStreetMap contributors（ODbL）。名前の無い路地は含まれない。",
+      "鉄道用地（PLATEAU土地利用の鉄道・港湾等、縁を6m広げる）の中は、たまりやすい場所・くぼ地の集計から除いている（railway_excluded に別記）。"
+    ]
+  },
+  "towns": [
+    {
+      "town": "中延一丁目",
+      "area_m2": 74745,
+      "elevation_m": {
+        "min": 22.36,
+        "median": 24.63,
+        "max": 25.52
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 497,
+        "share_of_town": 0.0066,
+        "depth_p95_m": 0.2
+      },
+      "roads": [
+        {
+          "road": "鮫洲大山線",
+          "length_in_town_m": 560,
+          "ponding_area_m2": 467,
+          "share_of_town_ponding": 0.939,
+          "ponding_share_of_corridor": 0.076,
+          "corridor_elevation_m": 24.73,
+          "surrounding_elevation_m": 24.78,
+          "lower_than_surroundings_m": 0.05,
+          "elevation_percentile_in_town": 64,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.061,
+        "cluster_count": 1,
+        "largest": [
+          {
+            "area_m2": 30,
+            "share_of_town_ponding": 0.061,
+            "direction_in_town": "北東",
+            "nearest_named_road": "鮫洲大山線",
+            "nearest_named_road_m": 67,
+            "elevation_percentile_in_town": 25,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0404,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0404
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 0,
+        "share_of_ponding": 0.0
+      },
+      "culvert": {
+        "passes_through_town": false,
+        "length_in_town_m": 0,
+        "distance_from_town_m": 811
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0,
+        "ponding_area_m2": 0,
+        "depression_area_m2": 0,
+        "depression_depth_max_m": 0.0
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0097,
+        "depression_count_2cells_or_more": 2,
+        "depression_depth_p95_m": 0.21,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 3.9,
+        "max_upstream_direction_in_town": "南東"
+      },
+      "records": {
+        "r7_0911_class": "0件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": null,
+        "history_1989_2020_abovefloor": null
+      },
+      "facilities": {
+        "shelters_in_town": [
+          "中延小学校"
+        ],
+        "nearest_shelter": {
+          "name": "中延小学校",
+          "distance_m": 131
+        },
+        "sandbags_in_town": [],
+        "nearest_sandbag": {
+          "name": "東急池上線ガード上",
+          "distance_m": 481
+        }
+      }
+    },
+    {
+      "town": "中延三丁目",
+      "area_m2": 73745,
+      "elevation_m": {
+        "min": 14.54,
+        "median": 22.26,
+        "max": 24.03
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 888,
+        "share_of_town": 0.012,
+        "depth_p95_m": 0.27
+      },
+      "roads": [],
+      "off_road_ponding": {
+        "share_of_town_ponding": 1.0,
+        "cluster_count": 10,
+        "largest": [
+          {
+            "area_m2": 512,
+            "share_of_town_ponding": 0.576,
+            "direction_in_town": "北",
+            "nearest_named_road": "中延スキップロード",
+            "nearest_named_road_m": 48,
+            "elevation_percentile_in_town": 45,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 90,
+            "share_of_town_ponding": 0.102,
+            "direction_in_town": "西",
+            "nearest_named_road": "仲通り",
+            "nearest_named_road_m": 108,
+            "elevation_percentile_in_town": 5,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 90,
+            "share_of_town_ponding": 0.102,
+            "direction_in_town": "西",
+            "nearest_named_road": "仲通り",
+            "nearest_named_road_m": 144,
+            "elevation_percentile_in_town": 3,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0182,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0182
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 0,
+        "share_of_ponding": 0.0
+      },
+      "culvert": {
+        "passes_through_town": false,
+        "length_in_town_m": 0,
+        "distance_from_town_m": 374
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0431,
+        "ponding_area_m2": 1686,
+        "depression_area_m2": 2122,
+        "depression_depth_max_m": 6.49
+      },
+      "field_notes": [
+        {
+          "note": "北西にある深さ約6.5mの窪み（約128m×93m、北緯35.6085・東経139.7096付近）は、池上線が一段低く掘られた掘割を地形データが拾ったもので、住宅地のくぼ地ではない",
+          "confirmed_by": "ユーザー（現地の状況の確認）",
+          "confirmed_on": "2026-09-25"
+        }
+      ],
+      "terrain": {
+        "depression_share_of_town": 0.0165,
+        "depression_count_2cells_or_more": 9,
+        "depression_depth_p95_m": 0.27,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 64.7,
+        "max_upstream_direction_in_town": "南"
+      },
+      "records": {
+        "r7_0911_class": "1-5件",
+        "r7_0911_confidence": "uncertain",
+        "history_1989_2020_buildings": 36,
+        "history_1989_2020_abovefloor": 23
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "延山小学校",
+          "distance_m": 299
+        },
+        "sandbags_in_town": [
+          "東急池上線ガード上"
+        ],
+        "nearest_sandbag": {
+          "name": "東急池上線ガード上",
+          "distance_m": 96
+        }
+      }
+    },
+    {
+      "town": "中延二丁目",
+      "area_m2": 85526,
+      "elevation_m": {
+        "min": 19.41,
+        "median": 23.28,
+        "max": 24.74
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 1460,
+        "share_of_town": 0.0171,
+        "depth_p95_m": 0.25
+      },
+      "roads": [
+        {
+          "road": "昭和通り",
+          "length_in_town_m": 125,
+          "ponding_area_m2": 181,
+          "share_of_town_ponding": 0.124,
+          "ponding_share_of_corridor": 0.069,
+          "corridor_elevation_m": 21.38,
+          "surrounding_elevation_m": 21.78,
+          "lower_than_surroundings_m": 0.4,
+          "elevation_percentile_in_town": 6,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "荏原文化センター通り",
+          "length_in_town_m": 343,
+          "ponding_area_m2": 0,
+          "share_of_town_ponding": 0.0,
+          "ponding_share_of_corridor": 0.0,
+          "corridor_elevation_m": 24.04,
+          "surrounding_elevation_m": 24.01,
+          "lower_than_surroundings_m": -0.03,
+          "elevation_percentile_in_town": 75,
+          "official_hazard_share_of_corridor": 0.002,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.876,
+        "cluster_count": 15,
+        "largest": [
+          {
+            "area_m2": 482,
+            "share_of_town_ponding": 0.33,
+            "direction_in_town": "南西",
+            "nearest_named_road": "昭和通り",
+            "nearest_named_road_m": 41,
+            "elevation_percentile_in_town": 1,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 120,
+            "share_of_town_ponding": 0.082,
+            "direction_in_town": "北西",
+            "nearest_named_road": "荏原文化センター通り",
+            "nearest_named_road_m": 45,
+            "elevation_percentile_in_town": 18,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 120,
+            "share_of_town_ponding": 0.082,
+            "direction_in_town": "北東",
+            "nearest_named_road": "荏原文化センター通り",
+            "nearest_named_road_m": 43,
+            "elevation_percentile_in_town": 60,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0135,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0135
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 15,
+        "share_of_ponding": 0.01
+      },
+      "culvert": {
+        "passes_through_town": false,
+        "length_in_town_m": 0,
+        "distance_from_town_m": 540
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0097,
+        "ponding_area_m2": 90,
+        "depression_area_m2": 120,
+        "depression_depth_max_m": 1.62
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0224,
+        "depression_count_2cells_or_more": 8,
+        "depression_depth_p95_m": 0.25,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 42.4,
+        "max_upstream_direction_in_town": "南"
+      },
+      "records": {
+        "r7_0911_class": "6-15件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 51,
+        "history_1989_2020_abovefloor": 30
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "中延小学校",
+          "distance_m": 207
+        },
+        "sandbags_in_town": [],
+        "nearest_sandbag": {
+          "name": "東急池上線ガード上",
+          "distance_m": 195
+        }
+      }
+    },
+    {
+      "town": "中延五丁目",
+      "area_m2": 104513,
+      "elevation_m": {
+        "min": 17.69,
+        "median": 19.22,
+        "max": 28.65
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 3101,
+        "share_of_town": 0.0297,
+        "depth_p95_m": 0.31
+      },
+      "roads": [
+        {
+          "road": "立会道路",
+          "length_in_town_m": 542,
+          "ponding_area_m2": 964,
+          "share_of_town_ponding": 0.311,
+          "ponding_share_of_corridor": 0.107,
+          "corridor_elevation_m": 18.59,
+          "surrounding_elevation_m": 18.81,
+          "lower_than_surroundings_m": 0.22,
+          "elevation_percentile_in_town": 19,
+          "official_hazard_share_of_corridor": 0.029,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満",
+            "0.5m以上1.0m未満"
+          ]
+        },
+        {
+          "road": "三間通り",
+          "length_in_town_m": 322,
+          "ponding_area_m2": 437,
+          "share_of_town_ponding": 0.141,
+          "ponding_share_of_corridor": 0.072,
+          "corridor_elevation_m": 18.6,
+          "surrounding_elevation_m": 18.74,
+          "lower_than_surroundings_m": 0.14,
+          "elevation_percentile_in_town": 20,
+          "official_hazard_share_of_corridor": 0.069,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満",
+            "0.5m以上1.0m未満"
+          ]
+        },
+        {
+          "road": "仲通り",
+          "length_in_town_m": 82,
+          "ponding_area_m2": 0,
+          "share_of_town_ponding": 0.0,
+          "ponding_share_of_corridor": 0.0,
+          "corridor_elevation_m": 18.7,
+          "surrounding_elevation_m": 18.63,
+          "lower_than_surroundings_m": -0.07,
+          "elevation_percentile_in_town": 27,
+          "official_hazard_share_of_corridor": 0.144,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満",
+            "0.5m以上1.0m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.549,
+        "cluster_count": 21,
+        "largest": [
+          {
+            "area_m2": 406,
+            "share_of_town_ponding": 0.131,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 23,
+            "elevation_percentile_in_town": 1,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 301,
+            "share_of_town_ponding": 0.097,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 26,
+            "elevation_percentile_in_town": 1,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 301,
+            "share_of_town_ponding": 0.097,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 16,
+            "elevation_percentile_in_town": 4,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.1096,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0833,
+          "0.5m以上1.0m未満": 0.0263
+        },
+        "deepest_class": "0.5m以上1.0m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 437,
+        "share_of_ponding": 0.141
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 881,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "北東",
+            "share_of_town_area": 0.343,
+            "share_of_town_ponding": 0.612,
+            "share_of_town_official_hazard": 0.719,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 18.44,
+                "ponding_share": 0.115,
+                "official_hazard_share": 0.331
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 18.58,
+                "ponding_share": 0.003,
+                "official_hazard_share": 0.242
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 19.22,
+                "ponding_share": 0.007,
+                "official_hazard_share": 0.063
+              }
+            ]
+          },
+          {
+            "direction": "南西",
+            "share_of_town_area": 0.657,
+            "share_of_town_ponding": 0.388,
+            "share_of_town_official_hazard": 0.281,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 18.94,
+                "ponding_share": 0.054,
+                "official_hazard_share": 0.092
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 19.92,
+                "ponding_share": 0.003,
+                "official_hazard_share": 0.054
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 23.28,
+                "ponding_share": 0.0,
+                "official_hazard_share": 0.0
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 28.19,
+                "ponding_share": 0.0,
+                "official_hazard_share": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0324,
+        "ponding_area_m2": 75,
+        "depression_area_m2": 75,
+        "depression_depth_max_m": 0.12
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0503,
+        "depression_count_2cells_or_more": 16,
+        "depression_depth_p95_m": 0.39,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 272.7,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "51-75件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 167,
+        "history_1989_2020_abovefloor": 75
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "源氏前小学校",
+          "distance_m": 346
+        },
+        "sandbags_in_town": [
+          "荏原町公園入口横",
+          "弁天通り公園内"
+        ],
+        "nearest_sandbag": {
+          "name": "荏原町公園入口横",
+          "distance_m": 113
+        }
+      }
+    },
+    {
+      "town": "中延六丁目",
+      "area_m2": 91821,
+      "elevation_m": {
+        "min": 17.04,
+        "median": 18.48,
+        "max": 25.08
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 5495,
+        "share_of_town": 0.0598,
+        "depth_p95_m": 0.47
+      },
+      "roads": [
+        {
+          "road": "三間通り",
+          "length_in_town_m": 265,
+          "ponding_area_m2": 1671,
+          "share_of_town_ponding": 0.304,
+          "ponding_share_of_corridor": 0.314,
+          "corridor_elevation_m": 17.7,
+          "surrounding_elevation_m": 18.04,
+          "lower_than_surroundings_m": 0.34,
+          "elevation_percentile_in_town": 9,
+          "official_hazard_share_of_corridor": 0.107,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        },
+        {
+          "road": "立会道路",
+          "length_in_town_m": 367,
+          "ponding_area_m2": 406,
+          "share_of_town_ponding": 0.074,
+          "ponding_share_of_corridor": 0.062,
+          "corridor_elevation_m": 18.29,
+          "surrounding_elevation_m": 18.45,
+          "lower_than_surroundings_m": 0.16,
+          "elevation_percentile_in_town": 39,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.622,
+        "cluster_count": 31,
+        "largest": [
+          {
+            "area_m2": 1551,
+            "share_of_town_ponding": 0.282,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 33,
+            "elevation_percentile_in_town": 6,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 391,
+            "share_of_town_ponding": 0.071,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 22,
+            "elevation_percentile_in_town": 3,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 256,
+            "share_of_town_ponding": 0.047,
+            "direction_in_town": "東",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 20,
+            "elevation_percentile_in_town": 8,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0422,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0422
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 723,
+        "share_of_ponding": 0.132
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 635,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "北",
+            "share_of_town_area": 0.62,
+            "share_of_town_ponding": 0.962,
+            "share_of_town_official_hazard": 1.0,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 17.89,
+                "ponding_share": 0.166,
+                "official_hazard_share": 0.116
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 17.8,
+                "ponding_share": 0.187,
+                "official_hazard_share": 0.113
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 18.41,
+                "ponding_share": 0.011,
+                "official_hazard_share": 0.024
+              }
+            ]
+          },
+          {
+            "direction": "南",
+            "share_of_town_area": 0.38,
+            "share_of_town_ponding": 0.038,
+            "share_of_town_official_hazard": 0.0,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 19.3,
+                "ponding_share": 0.01,
+                "official_hazard_share": 0.0
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 23.38,
+                "ponding_share": 0.007,
+                "official_hazard_share": 0.0
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 23.74,
+                "ponding_share": 0.0,
+                "official_hazard_share": 0.0
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 23.53,
+                "ponding_share": 0.0,
+                "official_hazard_share": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0,
+        "ponding_area_m2": 0,
+        "depression_area_m2": 0,
+        "depression_depth_max_m": 0.0
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.154,
+        "depression_count_2cells_or_more": 7,
+        "depression_depth_p95_m": 0.47,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 282.1,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "31-50件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 218,
+        "history_1989_2020_abovefloor": 99
+      },
+      "facilities": {
+        "shelters_in_town": [
+          "源氏前小学校"
+        ],
+        "nearest_shelter": {
+          "name": "源氏前小学校",
+          "distance_m": 55
+        },
+        "sandbags_in_town": [
+          "源氏前公園入り口",
+          "中延六丁目広場"
+        ],
+        "nearest_sandbag": {
+          "name": "中延六丁目広場",
+          "distance_m": 33
+        }
+      }
+    },
+    {
+      "town": "中延四丁目",
+      "area_m2": 119214,
+      "elevation_m": {
+        "min": 18.18,
+        "median": 21.13,
+        "max": 23.78
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 2484,
+        "share_of_town": 0.0208,
+        "depth_p95_m": 0.45
+      },
+      "roads": [
+        {
+          "road": "仲通り",
+          "length_in_town_m": 321,
+          "ponding_area_m2": 45,
+          "share_of_town_ponding": 0.018,
+          "ponding_share_of_corridor": 0.013,
+          "corridor_elevation_m": 22.49,
+          "surrounding_elevation_m": 22.47,
+          "lower_than_surroundings_m": -0.02,
+          "elevation_percentile_in_town": 72,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.982,
+        "cluster_count": 16,
+        "largest": [
+          {
+            "area_m2": 1265,
+            "share_of_town_ponding": 0.509,
+            "direction_in_town": "西",
+            "nearest_named_road": "仲通り",
+            "nearest_named_road_m": 176,
+            "elevation_percentile_in_town": 15,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 692,
+            "share_of_town_ponding": 0.279,
+            "direction_in_town": "南西",
+            "nearest_named_road": "仲通り",
+            "nearest_named_road_m": 157,
+            "elevation_percentile_in_town": 14,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 90,
+            "share_of_town_ponding": 0.036,
+            "direction_in_town": "北西",
+            "nearest_named_road": "仲通り",
+            "nearest_named_road_m": 14,
+            "elevation_percentile_in_town": 66,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 0,
+        "share_of_ponding": 0.0
+      },
+      "culvert": {
+        "passes_through_town": false,
+        "length_in_town_m": 0,
+        "distance_from_town_m": 106,
+        "sides": [
+          {
+            "direction": "北",
+            "share_of_town_area": 1.0,
+            "share_of_town_ponding": 1.0,
+            "share_of_town_official_hazard": 0.0,
+            "bands": [
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 21.07,
+                "ponding_share": 0.008,
+                "official_hazard_share": 0.0
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 20.2,
+                "ponding_share": 0.021,
+                "official_hazard_share": 0.0
+              }
+            ]
+          },
+          {
+            "direction": "南",
+            "share_of_town_area": 0.0,
+            "share_of_town_ponding": 0.0,
+            "share_of_town_official_hazard": 0.0,
+            "bands": []
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0676,
+        "ponding_area_m2": 361,
+        "depression_area_m2": 512,
+        "depression_depth_max_m": 0.21
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0438,
+        "depression_count_2cells_or_more": 5,
+        "depression_depth_p95_m": 0.47,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 73.0,
+        "max_upstream_direction_in_town": "南東"
+      },
+      "records": {
+        "r7_0911_class": "6-15件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 9,
+        "history_1989_2020_abovefloor": 3
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "源氏前小学校",
+          "distance_m": 263
+        },
+        "sandbags_in_town": [
+          "東急大井町線ガード下"
+        ],
+        "nearest_sandbag": {
+          "name": "東急大井町線ガード下",
+          "distance_m": 112
+        }
+      }
+    },
+    {
+      "town": "二葉一丁目",
+      "area_m2": 160093,
+      "elevation_m": {
+        "min": 10.64,
+        "median": 13.86,
+        "max": 19.85
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 4682,
+        "share_of_town": 0.0292,
+        "depth_p95_m": 0.51
+      },
+      "roads": [
+        {
+          "road": "鮫洲大山線",
+          "length_in_town_m": 912,
+          "ponding_area_m2": 557,
+          "share_of_town_ponding": 0.119,
+          "ponding_share_of_corridor": 0.041,
+          "corridor_elevation_m": 16.6,
+          "surrounding_elevation_m": 14.62,
+          "lower_than_surroundings_m": -1.98,
+          "elevation_percentile_in_town": 69,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "立会道路",
+          "length_in_town_m": 95,
+          "ponding_area_m2": 241,
+          "share_of_town_ponding": 0.051,
+          "ponding_share_of_corridor": 0.152,
+          "corridor_elevation_m": 12.05,
+          "surrounding_elevation_m": 12.14,
+          "lower_than_surroundings_m": 0.09,
+          "elevation_percentile_in_town": 4,
+          "official_hazard_share_of_corridor": 0.167,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満",
+            "0.5m以上1.0m未満"
+          ]
+        },
+        {
+          "road": "ふたばトンネル",
+          "length_in_town_m": 61,
+          "ponding_area_m2": 226,
+          "share_of_town_ponding": 0.048,
+          "ponding_share_of_corridor": 0.142,
+          "corridor_elevation_m": 17.94,
+          "surrounding_elevation_m": 18.45,
+          "lower_than_surroundings_m": 0.51,
+          "elevation_percentile_in_town": 74,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "四間通り",
+          "length_in_town_m": 242,
+          "ponding_area_m2": 30,
+          "share_of_town_ponding": 0.006,
+          "ponding_share_of_corridor": 0.011,
+          "corridor_elevation_m": 16.64,
+          "surrounding_elevation_m": 16.06,
+          "lower_than_surroundings_m": -0.59,
+          "elevation_percentile_in_town": 69,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "三間通り",
+          "length_in_town_m": 458,
+          "ponding_area_m2": 15,
+          "share_of_town_ponding": 0.003,
+          "ponding_share_of_corridor": 0.002,
+          "corridor_elevation_m": 12.56,
+          "surrounding_elevation_m": 12.85,
+          "lower_than_surroundings_m": 0.29,
+          "elevation_percentile_in_town": 19,
+          "official_hazard_share_of_corridor": 0.032,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.82,
+        "cluster_count": 23,
+        "largest": [
+          {
+            "area_m2": 1295,
+            "share_of_town_ponding": 0.277,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 29,
+            "elevation_percentile_in_town": 2,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 978,
+            "share_of_town_ponding": 0.209,
+            "direction_in_town": "東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 48,
+            "elevation_percentile_in_town": 3,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 301,
+            "share_of_town_ponding": 0.064,
+            "direction_in_town": "東",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 39,
+            "elevation_percentile_in_town": 3,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.1009,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0716,
+          "0.5m以上1.0m未満": 0.0293
+        },
+        "deepest_class": "0.5m以上1.0m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 858,
+        "share_of_ponding": 0.183
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 95,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "南東",
+            "share_of_town_area": 0.001,
+            "share_of_town_ponding": 0.013,
+            "share_of_town_official_hazard": 0.0,
+            "bands": []
+          },
+          {
+            "direction": "北西",
+            "share_of_town_area": 0.999,
+            "share_of_town_ponding": 0.987,
+            "share_of_town_official_hazard": 1.0,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 12.45,
+                "ponding_share": 0.107,
+                "official_hazard_share": 0.388
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 12.4,
+                "ponding_share": 0.042,
+                "official_hazard_share": 0.232
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 13.48,
+                "ponding_share": 0.003,
+                "official_hazard_share": 0.044
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 17.81,
+                "ponding_share": 0.018,
+                "official_hazard_share": 0.01
+              }
+            ]
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0517,
+        "ponding_area_m2": 0,
+        "depression_area_m2": 0,
+        "depression_depth_max_m": 0.0
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0675,
+        "depression_count_2cells_or_more": 12,
+        "depression_depth_p95_m": 2.79,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 487.1,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "76-110件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 167,
+        "history_1989_2020_abovefloor": 47
+      },
+      "facilities": {
+        "shelters_in_town": [
+          "豊葉の杜学園"
+        ],
+        "nearest_shelter": {
+          "name": "豊葉の杜学園",
+          "distance_m": 148
+        },
+        "sandbags_in_town": [],
+        "nearest_sandbag": {
+          "name": "西大井広場内",
+          "distance_m": 559
+        }
+      }
+    },
+    {
+      "town": "二葉三丁目",
+      "area_m2": 95147,
+      "elevation_m": {
+        "min": 14.25,
+        "median": 16.2,
+        "max": 21.47
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 5947,
+        "share_of_town": 0.0625,
+        "depth_p95_m": 0.71
+      },
+      "roads": [
+        {
+          "road": "三間通り",
+          "length_in_town_m": 373,
+          "ponding_area_m2": 964,
+          "share_of_town_ponding": 0.162,
+          "ponding_share_of_corridor": 0.129,
+          "corridor_elevation_m": 15.33,
+          "surrounding_elevation_m": 15.45,
+          "lower_than_surroundings_m": 0.12,
+          "elevation_percentile_in_town": 27,
+          "official_hazard_share_of_corridor": 0.097,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満",
+            "0.5m以上1.0m未満"
+          ]
+        },
+        {
+          "road": "立会道路",
+          "length_in_town_m": 158,
+          "ponding_area_m2": 135,
+          "share_of_town_ponding": 0.023,
+          "ponding_share_of_corridor": 0.065,
+          "corridor_elevation_m": 15.45,
+          "surrounding_elevation_m": 15.0,
+          "lower_than_surroundings_m": -0.45,
+          "elevation_percentile_in_town": 31,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.815,
+        "cluster_count": 29,
+        "largest": [
+          {
+            "area_m2": 3162,
+            "share_of_town_ponding": 0.532,
+            "direction_in_town": "南",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 38,
+            "elevation_percentile_in_town": 13,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 708,
+            "share_of_town_ponding": 0.119,
+            "direction_in_town": "東",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 38,
+            "elevation_percentile_in_town": 19,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 166,
+            "share_of_town_ponding": 0.028,
+            "direction_in_town": "南",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 32,
+            "elevation_percentile_in_town": 17,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.1475,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0751,
+          "0.5m以上1.0m未満": 0.0724
+        },
+        "deepest_class": "0.5m以上1.0m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 2153,
+        "share_of_ponding": 0.362
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 158,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "南",
+            "share_of_town_area": 0.006,
+            "share_of_town_ponding": 0.003,
+            "share_of_town_official_hazard": 0.011,
+            "bands": []
+          },
+          {
+            "direction": "北",
+            "share_of_town_area": 0.994,
+            "share_of_town_ponding": 0.997,
+            "share_of_town_official_hazard": 0.989,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 15.02,
+                "ponding_share": 0.185,
+                "official_hazard_share": 0.26
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 15.38,
+                "ponding_share": 0.091,
+                "official_hazard_share": 0.303
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 16.53,
+                "ponding_share": 0.039,
+                "official_hazard_share": 0.08
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 19.54,
+                "ponding_share": 0.0,
+                "official_hazard_share": 0.058
+              }
+            ]
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.1187,
+        "ponding_area_m2": 572,
+        "depression_area_m2": 708,
+        "depression_depth_max_m": 0.9
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.2166,
+        "depression_count_2cells_or_more": 3,
+        "depression_depth_p95_m": 0.9,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 446.5,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "76-110件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 159,
+        "history_1989_2020_abovefloor": 99
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "上神明小学校",
+          "distance_m": 375
+        },
+        "sandbags_in_town": [
+          "二葉中央のんき通り広場"
+        ],
+        "nearest_sandbag": {
+          "name": "二葉中央のんき通り広場",
+          "distance_m": 175
+        }
+      }
+    },
+    {
+      "town": "二葉二丁目",
+      "area_m2": 98004,
+      "elevation_m": {
+        "min": 12.81,
+        "median": 14.52,
+        "max": 19.8
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 1611,
+        "share_of_town": 0.0164,
+        "depth_p95_m": 0.55
+      },
+      "roads": [
+        {
+          "road": "立会道路",
+          "length_in_town_m": 56,
+          "ponding_area_m2": 60,
+          "share_of_town_ponding": 0.037,
+          "ponding_share_of_corridor": 0.082,
+          "corridor_elevation_m": 13.74,
+          "surrounding_elevation_m": 13.68,
+          "lower_than_surroundings_m": -0.06,
+          "elevation_percentile_in_town": 16,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "三間通り",
+          "length_in_town_m": 371,
+          "ponding_area_m2": 0,
+          "share_of_town_ponding": 0.0,
+          "ponding_share_of_corridor": 0.0,
+          "corridor_elevation_m": 14.27,
+          "surrounding_elevation_m": 14.34,
+          "lower_than_surroundings_m": 0.07,
+          "elevation_percentile_in_town": 39,
+          "official_hazard_share_of_corridor": 0.014,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.963,
+        "cluster_count": 13,
+        "largest": [
+          {
+            "area_m2": 738,
+            "share_of_town_ponding": 0.458,
+            "direction_in_town": "北",
+            "nearest_named_road": "四間通り",
+            "nearest_named_road_m": 100,
+            "elevation_percentile_in_town": 64,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 301,
+            "share_of_town_ponding": 0.187,
+            "direction_in_town": "南西",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 42,
+            "elevation_percentile_in_town": 17,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 196,
+            "share_of_town_ponding": 0.121,
+            "direction_in_town": "北西",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 130,
+            "elevation_percentile_in_town": 84,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0974,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0894,
+          "0.5m以上1.0m未満": 0.008
+        },
+        "deepest_class": "0.5m以上1.0m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 181,
+        "share_of_ponding": 0.112
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 56,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "南東",
+            "share_of_town_area": 0.0,
+            "share_of_town_ponding": 0.009,
+            "share_of_town_official_hazard": 0.0,
+            "bands": []
+          },
+          {
+            "direction": "北西",
+            "share_of_town_area": 1.0,
+            "share_of_town_ponding": 0.991,
+            "share_of_town_official_hazard": 1.0,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 13.59,
+                "ponding_share": 0.027,
+                "official_hazard_share": 0.283
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 14.02,
+                "ponding_share": 0.005,
+                "official_hazard_share": 0.163
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 14.69,
+                "ponding_share": 0.004,
+                "official_hazard_share": 0.012
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 17.65,
+                "ponding_share": 0.038,
+                "official_hazard_share": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0372,
+        "ponding_area_m2": 0,
+        "depression_area_m2": 0,
+        "depression_depth_max_m": 0.0
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0237,
+        "depression_count_2cells_or_more": 9,
+        "depression_depth_p95_m": 0.54,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 469.6,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "51-75件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 133,
+        "history_1989_2020_abovefloor": 81
+      },
+      "facilities": {
+        "shelters_in_town": [],
+        "nearest_shelter": {
+          "name": "豊葉の杜学園",
+          "distance_m": 340
+        },
+        "sandbags_in_town": [
+          "西大井広場内"
+        ],
+        "nearest_sandbag": {
+          "name": "西大井広場内",
+          "distance_m": 232
+        }
+      }
+    },
+    {
+      "town": "二葉四丁目",
+      "area_m2": 118484,
+      "elevation_m": {
+        "min": 15.12,
+        "median": 17.47,
+        "max": 21.39
+      },
+      "ponding": {
+        "threshold_m": 0.1,
+        "area_m2": 2665,
+        "share_of_town": 0.0225,
+        "depth_p95_m": 0.44
+      },
+      "roads": [
+        {
+          "road": "第二京浜",
+          "length_in_town_m": 414,
+          "ponding_area_m2": 873,
+          "share_of_town_ponding": 0.328,
+          "ponding_share_of_corridor": 0.154,
+          "corridor_elevation_m": 17.91,
+          "surrounding_elevation_m": 17.91,
+          "lower_than_surroundings_m": 0.0,
+          "elevation_percentile_in_town": 68,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "三間通り",
+          "length_in_town_m": 524,
+          "ponding_area_m2": 437,
+          "share_of_town_ponding": 0.164,
+          "ponding_share_of_corridor": 0.042,
+          "corridor_elevation_m": 16.72,
+          "surrounding_elevation_m": 17.0,
+          "lower_than_surroundings_m": 0.28,
+          "elevation_percentile_in_town": 31,
+          "official_hazard_share_of_corridor": 0.096,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        },
+        {
+          "road": "立会道路",
+          "length_in_town_m": 215,
+          "ponding_area_m2": 30,
+          "share_of_town_ponding": 0.011,
+          "ponding_share_of_corridor": 0.012,
+          "corridor_elevation_m": 17.26,
+          "surrounding_elevation_m": 17.08,
+          "lower_than_surroundings_m": -0.18,
+          "elevation_percentile_in_town": 45,
+          "official_hazard_share_of_corridor": 0.0,
+          "official_hazard_classes": []
+        },
+        {
+          "road": "補助第29号線",
+          "length_in_town_m": 258,
+          "ponding_area_m2": 0,
+          "share_of_town_ponding": 0.0,
+          "ponding_share_of_corridor": 0.0,
+          "corridor_elevation_m": 16.5,
+          "surrounding_elevation_m": 17.08,
+          "lower_than_surroundings_m": 0.58,
+          "elevation_percentile_in_town": 25,
+          "official_hazard_share_of_corridor": 0.15,
+          "official_hazard_classes": [
+            "0.1m以上0.5m未満"
+          ]
+        }
+      ],
+      "off_road_ponding": {
+        "share_of_town_ponding": 0.571,
+        "cluster_count": 24,
+        "largest": [
+          {
+            "area_m2": 467,
+            "share_of_town_ponding": 0.175,
+            "direction_in_town": "西",
+            "nearest_named_road": "三間通り",
+            "nearest_named_road_m": 30,
+            "elevation_percentile_in_town": 59,
+            "overlaps_official_hazard": true
+          },
+          {
+            "area_m2": 226,
+            "share_of_town_ponding": 0.085,
+            "direction_in_town": "南",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 27,
+            "elevation_percentile_in_town": 32,
+            "overlaps_official_hazard": false
+          },
+          {
+            "area_m2": 135,
+            "share_of_town_ponding": 0.051,
+            "direction_in_town": "南東",
+            "nearest_named_road": "立会道路",
+            "nearest_named_road_m": 17,
+            "elevation_percentile_in_town": 3,
+            "overlaps_official_hazard": false
+          }
+        ]
+      },
+      "official_hazard": {
+        "share_of_town": 0.0845,
+        "share_by_depth_class": {
+          "0.1m以上0.5m未満": 0.0845
+        },
+        "deepest_class": "0.1m以上0.5m未満"
+      },
+      "ponding_in_official_hazard": {
+        "area_m2": 211,
+        "share_of_ponding": 0.079
+      },
+      "culvert": {
+        "passes_through_town": true,
+        "length_in_town_m": 215,
+        "distance_from_town_m": 0,
+        "sides": [
+          {
+            "direction": "北",
+            "share_of_town_area": 0.999,
+            "share_of_town_ponding": 1.0,
+            "share_of_town_official_hazard": 1.0,
+            "bands": [
+              {
+                "from_m": 0,
+                "to_m": 50,
+                "elevation_median_m": 16.37,
+                "ponding_share": 0.024,
+                "official_hazard_share": 0.118
+              },
+              {
+                "from_m": 50,
+                "to_m": 100,
+                "elevation_median_m": 16.63,
+                "ponding_share": 0.034,
+                "official_hazard_share": 0.161
+              },
+              {
+                "from_m": 100,
+                "to_m": 200,
+                "elevation_median_m": 17.71,
+                "ponding_share": 0.022,
+                "official_hazard_share": 0.039
+              },
+              {
+                "from_m": 200,
+                "to_m": 300,
+                "elevation_median_m": 19.03,
+                "ponding_share": 0.001,
+                "official_hazard_share": 0.029
+              }
+            ]
+          },
+          {
+            "direction": "南",
+            "share_of_town_area": 0.001,
+            "share_of_town_ponding": 0.0,
+            "share_of_town_official_hazard": 0.0,
+            "bands": []
+          }
+        ]
+      },
+      "railway_excluded": {
+        "railway_share_of_town": 0.0,
+        "ponding_area_m2": 0,
+        "depression_area_m2": 0,
+        "depression_depth_max_m": 0.0
+      },
+      "field_notes": [],
+      "terrain": {
+        "depression_share_of_town": 0.0559,
+        "depression_count_2cells_or_more": 12,
+        "depression_depth_p95_m": 0.5,
+        "ponding_in_depressions_share": 1.0,
+        "max_upstream_area_ha": 399.9,
+        "max_upstream_direction_in_town": "東"
+      },
+      "records": {
+        "r7_0911_class": "31-50件",
+        "r7_0911_confidence": "confirmed",
+        "history_1989_2020_buildings": 38,
+        "history_1989_2020_abovefloor": 27
+      },
+      "facilities": {
+        "shelters_in_town": [
+          "上神明小学校"
+        ],
+        "nearest_shelter": {
+          "name": "上神明小学校",
+          "distance_m": 136
+        },
+        "sandbags_in_town": [],
+        "nearest_sandbag": {
+          "name": "源氏前公園入り口",
+          "distance_m": 169
+        }
+      }
+    }
+  ]
+}
