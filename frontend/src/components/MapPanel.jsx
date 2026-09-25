@@ -54,6 +54,54 @@ const HAZARD_FILL_COLOR_EXPR = [
   "#888888", // 未知クラスのフォールバック
 ];
 
+// 自前モデルの湛水表示（ponding-layer）の色。tools/export_web_ponding_overlay.py の RAMP_STOPS と合わせる。
+const PONDING_RAMP = ["rgb(226,206,242)", "rgb(196,160,230)", "rgb(160,107,212)", "rgb(120,58,180)", "rgb(80,20,130)"];
+const HAZARD_FILL_OPACITY = 0.45;
+const PONDING_OPACITY = 0.8 * (190 / 255); // raster-opacity × 画像のアルファ
+
+const HAZARD_LEGEND_LABELS = {
+  "0.1m以上0.5m未満": "0.1〜0.5m",
+  "0.5m以上1.0m未満": "0.5〜1m",
+  "1.0m以上3.0m未満": "1〜3m",
+  "3.0m以上5.0m未満": "3〜5m",
+  "5.0m以上": "5m以上",
+};
+
+// 凡例は「何を示しているか」を書く。データの出どころは左下の注記に任せる。
+function MapLegend() {
+  return (
+    <div className="bg-white/90 rounded px-2.5 py-2 text-xs text-gray-800 border border-gray-200 pointer-events-none space-y-2 w-56">
+      <div>
+        <div className="font-medium">浸水が想定される区域と深さ</div>
+        <div className="text-gray-500 mb-1">大雨（1時間153mm・24時間690mm）のとき</div>
+        <div className="space-y-0.5">
+          {Object.entries(HAZARD_COLOR_BY_CLASS).map(([depthClass, color]) => (
+            <div key={depthClass} className="flex items-center gap-1.5">
+              <span
+                className="inline-block w-4 h-3 border border-gray-300"
+                style={{ backgroundColor: color, opacity: HAZARD_FILL_OPACITY + 0.2 }}
+              />
+              <span>{HAZARD_LEGEND_LABELS[depthClass] ?? depthClass}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="font-medium">雨水がたまりやすい場所</div>
+        <div className="text-gray-500 mb-1">低い所や道路沿い。濃いほど深い</div>
+        <div
+          className="h-3 w-full rounded-sm border border-gray-300"
+          style={{ backgroundImage: `linear-gradient(to right, ${PONDING_RAMP.join(", ")})`, opacity: PONDING_OPACITY + 0.15 }}
+        />
+        <div className="flex justify-between text-gray-500 mt-0.5">
+          <span>浅い</span>
+          <span>深い</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function boundsOfFeature(feature) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   const visit = (coords) => {
@@ -222,7 +270,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
           id: "ponding-layer",
           type: "raster",
           source: "ponding",
-          paint: { "raster-opacity": 0.8 },
+          paint: { "raster-opacity": 0.8 }, // 凡例の PONDING_OPACITY と合わせる
         });
       }
 
@@ -232,7 +280,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
           id: "hazard-fill",
           type: "fill",
           source: "hazard",
-          paint: { "fill-color": HAZARD_FILL_COLOR_EXPR, "fill-opacity": 0.45 },
+          paint: { "fill-color": HAZARD_FILL_COLOR_EXPR, "fill-opacity": HAZARD_FILL_OPACITY },
         });
       }
 
@@ -289,6 +337,9 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
+      <div className="absolute top-2 left-2">
+        <MapLegend />
+      </div>
       <div className="absolute bottom-2 left-2 flex flex-col gap-1 items-start">
         {/* モデルの前提はAPIのmodel（backend/app/data.py MODEL_INFO）から表示する（PLATEAU導入計画 7章）。 */}
         <div className="bg-white/90 rounded px-2 py-1 text-xs text-amber-700 border border-amber-200 pointer-events-none max-w-md">
