@@ -25,6 +25,9 @@ npm-debug.log*
 *.qgz
 *.aux.xml
 *.points
+*.gml
+*.gfs
+data/naisui_poc/01_raw/plateau/**/*.zip
 data/naisui_poc/01_raw/dem/
 data/naisui_poc/02_processed/depression_review/
 data/naisui_poc/02_processed/evaluation/shinagawa_hazard_from_pdf.geojson

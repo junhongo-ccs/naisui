@@ -1,0 +1,7 @@
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393526_bldg_6697_op.gml 72538881 5934
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393527_bldg_6697_op.gml 74926564 6106
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393528_bldg_6697_op.gml 73913055 4759
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393536_bldg_6697_op.gml 70970233 5805
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393537_bldg_6697_op.gml 74757903 6102
+https://assets.cms.plateau.reearth.io/assets/4b/90d7b7-679a-46d4-a842-7706fec36d40/13109_shinagawa-ku_pref_2025_citygml_1_op/udx/bldg/53393538_bldg_6697_op.gml 45365622 3467
+https://assets.cms.plateau.reearth.io/assets/b9/5172a7-6103-4090-be33-bb6a10bc210d/13109_shinagawa-ku_pref_2025_citygml_1_op_codelists.zip 0 0

@@ -1,0 +1,39 @@
+{
+  "phase": "PLATEAU導入計画 フェーズ0B",
+  "generated_at": "2026-09-25T04:56:04+00:00",
+  "inputs": {
+    "buildings": "data\\naisui_poc\\02_processed\\plateau\\bldg_2025.gpkg",
+    "buildings_layer": null,
+    "towns": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\boundaries\\r2kb13109.shp",
+    "history": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\shinagawa_inundation_history_target.csv",
+    "r7": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\shinagawa_inundation_r7_0911_target.csv",
+    "risk_lookup": [
+      "data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_153mmh_24h_690mm_official\\risk_lookup_sc_153mmh_24h_690mm_official.json",
+      "data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_100mm_extreme\\risk_lookup_sc_100mm_extreme.json",
+      "data\\naisui_poc\\02_processed\\pysheds_surface_routing\\sc_80mm_peak\\risk_lookup_sc_80mm_peak.json"
+    ]
+  },
+  "plateau_year": "2025",
+  "retrieved_at": "2026-09-25",
+  "work_crs": "EPSG:6677",
+  "assignment_rule": "建物ポリゴンの重心が含まれる町丁目に割り当てる。重心が建物外の場合は建物内部の代表点を使う。",
+  "building_stats": {
+    "input_features": 32173,
+    "empty_geometries": 832,
+    "polygon_features": 31341,
+    "unique_buildings": 31341,
+    "id_field_found": 1,
+    "repaired_invalid_geometries": 31341,
+    "centroid_outside_footprint": 98
+  },
+  "towns_without_buildings": [],
+  "r7_rank_stable_between_class_bounds": true,
+  "r7_rank_changed_towns": [],
+  "r7_upper_bound_defined_for_all": true,
+  "limitations": [
+    "PLATEAUの整備年度と実績の対象期間（1989〜2020年、2025年9月11日）は一致せず、建て替え・新築による建物数の変化は補正していない。",
+    "R7.9.11実績は件数の階級であり、正規化後の率は階級の下限・上限の幅を持つ。",
+    "照合できる町丁目は9〜10であり、順位相関の小さな差を改善・悪化と判定しない（PLATEAU導入計画 2.1節）。",
+    "正規化後の値は検証用の町丁目単位の相対比較であり、個別建物の浸水や避難判断の根拠にしない。"
+  ]
+}
