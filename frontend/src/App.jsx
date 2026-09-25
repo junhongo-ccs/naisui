@@ -86,6 +86,7 @@ export default function App() {
           text: res.display_text,
           facts: res.facts,
           sources: res.sources,
+          townChoices: res.town_choices,
           scenarioId,
           scenarioLabel: OFFICIAL_SCENARIO_LABEL,
         },
@@ -137,6 +138,7 @@ export default function App() {
                 loading={loading}
                 error={error}
                 currentScenarioId={scenarioId}
+                onSelectTown={handleTownSelect}
               />
             </div>
           </div>
@@ -155,6 +157,7 @@ export default function App() {
               loading={loading}
               error={error}
               currentScenarioId={scenarioId}
+              onSelectTown={handleTownSelect}
             />
           </div>
         </div>

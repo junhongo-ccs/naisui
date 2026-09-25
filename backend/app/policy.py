@@ -11,6 +11,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from .data import COVERAGE_LABEL, TOWN_CHOICES
+
 # 簡易キーワードマッチ。精緻化は別タスク（docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md 未確定の前提）。
 EMERGENCY_KEYWORDS = [
     "閉じ込め",
@@ -63,20 +65,39 @@ def emergency_response() -> dict[str, Any]:
     }
 
 
-def ambiguous_location_response(unrecognized_place: str | None = None) -> dict[str, Any]:
-    if unrecognized_place:
-        context = (
-            f"「{unrecognized_place}」は対象の町丁目（中延一〜六丁目、二葉一〜四丁目）として特定できないため、"
-            "推測で地点を補完していません。"
-        )
+def ambiguous_location_response(
+    unrecognized_place: str | None = None,
+    out_of_area_town: str | None = None,
+    multiple_towns: list[str] | None = None,
+) -> dict[str, Any]:
+    """町丁目を特定できないときの応答。PoCのデータ範囲を明示し、その中から選んでもらう。
+
+    地名から町丁目を推測しない。場所が特定できない地名は「範囲外」とも断定しない
+    （実際には範囲内の地名である可能性があるため）。
+    """
+    coverage = f"このPoCでデータがあるのは、{COVERAGE_LABEL}だけです。"
+    if out_of_area_town:
+        headline = f"{out_of_area_town}はこのPoCの対象範囲外です"
+        context = f"{coverage}{out_of_area_town}のデータはありません。"
+    elif unrecognized_place:
+        headline = f"「{unrecognized_place}」の場所を特定できません"
+        context = f"{coverage}「{unrecognized_place}」がこの中のどの町丁目にあたるかは推測しません。"
+    elif multiple_towns:
+        headline = "町丁目を1つ選んでください"
+        context = f"{'と'.join(multiple_towns)}の{len(multiple_towns)}つが書かれています。1つずつお答えします。{coverage}"
     else:
-        context = "町丁目が未指定のため、推測で地点を補完していません。"
+        headline = "対象の町丁目を教えてください"
+        context = f"町丁目が未指定のため、推測で地点を補完していません。{coverage}"
+    steps = ["下の町丁目から1つ選んでください（選ぶと入力欄に反映されます）。"]
+    if out_of_area_town or unrecognized_place:
+        steps.append("対象範囲外の地域は、品川区の公式ハザードマップ・浸水実績を確認してください。")
     return {
-        "headline": "対象の町丁目を教えてください",
+        "headline": headline,
         "status": "insufficient_data",
         "facts": [],
         "model_context": context,
-        "safe_next_steps": ["画面のボタンから対象の町丁目を選択するか、町丁目名を入力してください。"],
+        "safe_next_steps": steps,
+        "town_choices": TOWN_CHOICES,
         "prohibited_claim_check": {
             "route_instruction": False,
             "shelter_safety_guarantee": False,

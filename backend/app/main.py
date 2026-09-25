@@ -89,11 +89,15 @@ def chat(req: ChatRequest) -> ChatResponse:
     # 選択中の町丁目で答えず、推測せず確認を求める。
     mentioned = data.towns_mentioned(req.message)
     other_places = data.unrecognized_places(req.message)
+    out_of_area = [name.removeprefix("対象外:") for name in mentioned if name.startswith("対象外:")]
+    if out_of_area:
+        contract = policy.ambiguous_location_response(out_of_area_town=out_of_area[0])
+        return _to_chat_response(contract, contract["headline"])
     if other_places:
         contract = policy.ambiguous_location_response(unrecognized_place=other_places[0])
         return _to_chat_response(contract, contract["headline"])
-    if len(mentioned) > 1 or any(name.startswith("対象外:") for name in mentioned):
-        contract = policy.ambiguous_location_response()
+    if len(mentioned) > 1:
+        contract = policy.ambiguous_location_response(multiple_towns=mentioned)
         return _to_chat_response(contract, contract["headline"])
     if mentioned:
         town_name: str | None = mentioned[0]

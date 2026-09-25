@@ -52,6 +52,10 @@ TOWN_SLUGS: dict[str, str] = {
 }
 SLUG_TO_TOWN = {v: k for k, v in TOWN_SLUGS.items()}
 
+# PoCでデータがある範囲。範囲外・特定できない場所を聞かれたときに、この範囲と選択肢を示す。
+COVERAGE_LABEL = "品川区の中延一〜六丁目・二葉一〜四丁目の10町丁目"
+TOWN_CHOICES: list[dict[str, str]] = [{"name": name, "slug": slug} for name, slug in TOWN_SLUGS.items()]
+
 # 自由入力の町丁目名の読み取り。「二葉二丁目」「二葉2丁目」「二葉２」「中延 6丁目」などを受け付ける。
 # 丁目の無い「二葉」や「荏原中延」は丁目が特定できないので読み取らない（推測で補わない）。
 _KANJI_DIGITS = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}

@@ -38,7 +38,29 @@ function EvidenceDetails({ message }) {
   );
 }
 
-function Bubble({ message, currentScenarioId }) {
+// PoCでデータがある範囲。backend/app/data.py の COVERAGE_LABEL と合わせる。
+const COVERAGE_NOTE = "このPoCのデータは、品川区の中延一〜六丁目・二葉一〜四丁目の10町丁目だけです。";
+
+// 町丁目を特定できなかった回答に添える選択肢。選ぶと入力欄に反映する（自動送信はしない）。
+function TownChoices({ choices, onSelectTown }) {
+  if (!choices?.length || !onSelectTown) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {choices.map((town) => (
+        <button
+          key={town.slug}
+          type="button"
+          onClick={() => onSelectTown(town)}
+          className="rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-sm text-brand-800 hover:bg-brand-100"
+        >
+          {town.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Bubble({ message, currentScenarioId, onSelectTown }) {
   if (message.role === "system") return <SystemNotice text={message.text} />;
   const isUser = message.role === "user";
   const stale = !isUser && message.scenarioLabel && message.scenarioId !== currentScenarioId;
@@ -54,13 +76,23 @@ function Bubble({ message, currentScenarioId }) {
           <div className="text-xs text-gray-400 mb-1">（{message.scenarioLabel}時点の回答）</div>
         )}
         {message.text}
+        {!isUser && <TownChoices choices={message.townChoices} onSelectTown={onSelectTown} />}
         {!isUser && <EvidenceDetails message={message} />}
       </div>
     </div>
   );
 }
 
-export default function ChatPanel({ messages, input, onInputChange, onSend, loading, error, currentScenarioId }) {
+export default function ChatPanel({
+  messages,
+  input,
+  onInputChange,
+  onSend,
+  loading,
+  error,
+  currentScenarioId,
+  onSelectTown,
+}) {
   const listRef = useRef(null);
 
   useEffect(() => {
@@ -77,12 +109,13 @@ export default function ChatPanel({ messages, input, onInputChange, onSend, load
     <div className="flex flex-col h-full min-h-0">
       <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-sm text-gray-400 text-center mt-8">
-            町丁目を選んで、状況を質問してください。
+          <div className="text-sm text-gray-400 text-center mt-8 space-y-1">
+            <div>町丁目を選んで、状況を質問してください。</div>
+            <div className="text-xs">{COVERAGE_NOTE}</div>
           </div>
         )}
         {messages.map((m) => (
-          <Bubble key={m.id} message={m} currentScenarioId={currentScenarioId} />
+          <Bubble key={m.id} message={m} currentScenarioId={currentScenarioId} onSelectTown={onSelectTown} />
         ))}
         {loading && (
           <div className="flex justify-start">
