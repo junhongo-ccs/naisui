@@ -1,8 +1,9 @@
 {
   "target_area": "Shinagawa_Nakanobu_Futaba",
   "model_version": "baseline_uniform_drainage_v1",
-  "grid_size_m": 5.0,
-  "crs": "EPSG:6677",
+  "grid_size_m": 3.88,
+  "crs": "EPSG:3857",
+  "grid_note": "国土地理院標高タイル（ズーム15）のWeb Mercator格子。名目画素4.78m、北緯35.6度での地上寸法は約3.88m四方。体積・面積は地上面積で計算する（docs/01_概要・計画/PLATEAU導入計画.md 2.2節）。モデルはこの欄を読まない。",
   "drainage_capacity": {
     "type": "uniform_equivalent_rate",
     "value_mm_per_hr": 50.0,

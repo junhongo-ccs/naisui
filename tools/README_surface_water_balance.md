@@ -31,6 +31,8 @@ uv --system-certs run --with-requirements tools\requirements-surface-water-balan
 
 DEM はダウンロード済みタイルの矩形範囲をモザイクしています。中延・二葉の**厳密な町丁目境界でのクリップ**は、境界ポリゴンを取得してから QGIS または GeoPandas で行います。GISで他の品川区データと重ねる際は、出力 GeoTIFF（EPSG:3857）を EPSG:6677 にオンザフライ再投影します。
 
+EPSG:3857の画素は名目4.78mですが、この緯度での地上寸法は約3.88m四方です。体積・湛水面積・町丁目別の面積は、`ground_cell_areas_m2` で求めた地上面積で計算します（名目画素面積で計算すると約1.52倍の過大になります）。
+
 ## DEMの流向・集水量解析
 
 次の処理は `pysheds` により、DEMのピット補正・凹地補正・平坦面補正を行った後、D8流向と集水量をGeoTIFFへ出力します。

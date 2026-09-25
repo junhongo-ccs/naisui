@@ -14,6 +14,8 @@ from rasterio.transform import xy
 from rasterio.warp import transform
 from scipy import ndimage
 
+from run_surface_water_balance import ground_cell_areas_m2
+
 
 def run(args: argparse.Namespace) -> None:
     with rasterio.open(args.input) as dataset:
@@ -24,7 +26,8 @@ def run(args: argparse.Namespace) -> None:
     values = np.asarray(depth.filled(0), dtype=np.float32)
     candidate = valid & (values >= args.min_depth_m)
     labels, count = ndimage.label(candidate, structure=np.ones((3, 3), dtype=np.uint8))
-    cell_area_m2 = abs(transform_affine.a * transform_affine.e)
+    # EPSG:3857の名目画素面積は地上面積の約1.5倍になるため、行ごとの地上面積を使う。
+    cell_area_m2 = ground_cell_areas_m2(transform_affine, crs, values.shape[0])[:, 0]
     records: list[dict[str, object]] = []
     for label_id in range(1, count + 1):
         rows, cols = np.where(labels == label_id)
@@ -40,7 +43,7 @@ def run(args: argparse.Namespace) -> None:
                 "candidate_id": label_id,
                 "max_depth_m": float(depths.max()),
                 "mean_depth_m": float(depths.mean()),
-                "area_m2": float(len(rows) * cell_area_m2),
+                "area_m2": float(cell_area_m2[rows].sum()),
                 "cell_count": int(len(rows)),
                 "center_x": center_x,
                 "center_y": center_y,

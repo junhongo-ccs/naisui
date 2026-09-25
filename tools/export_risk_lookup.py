@@ -16,6 +16,8 @@ import numpy as np
 import rasterio
 from rasterio.mask import mask
 
+from run_surface_water_balance import ground_cell_areas_m2
+
 
 TARGET_TOWN_PATTERN = r"^(中延[一二三四五六]丁目|二葉[一二三四]丁目)$"
 
@@ -38,11 +40,13 @@ def risk_level(area_over_threshold_ratio: float) -> str:
     return "床上浸水相当（危険）"
 
 
-def raster_values(path: Path, geometry: object) -> tuple[np.ndarray, float]:
+def raster_values(path: Path, geometry: object) -> tuple[np.ndarray, np.ndarray]:
+    """町丁目内のセル値と、各セルの地上面積（m²）を同じ順で返す。"""
     with rasterio.open(path) as dataset:
         values, transform = mask(dataset, [geometry], crop=True, filled=False, all_touched=True)
-        cell_area_m2 = abs(transform.a * transform.e)
-    return values[0].compressed().astype(float), cell_area_m2
+        areas = np.broadcast_to(ground_cell_areas_m2(transform, dataset.crs, values.shape[1]), values.shape[1:])
+    band = values[0]
+    return band.compressed().astype(float), np.ma.array(areas, mask=np.ma.getmaskarray(band)).compressed()
 
 
 def parse_elapsed_minutes(path: Path) -> float:
@@ -86,11 +90,13 @@ def run(args: argparse.Namespace) -> None:
     output_towns: dict[str, object] = result["towns"]  # type: ignore[assignment]
     for _, town in towns.iterrows():
         name = str(town[args.name_field])
-        max_values, cell_area_m2 = raster_values(maximum_raster, town.geometry)
+        max_values, cell_areas_m2 = raster_values(maximum_raster, town.geometry)
         if not len(max_values):
             continue
         valid = max_values >= 0
         values = max_values[valid]
+        areas = cell_areas_m2[valid]
+        over_threshold = values >= args.depth_threshold_m
         peak_depth_m = -1.0
         peak_time_min = 0.0
         for raster_path in time_rasters:
@@ -99,11 +105,12 @@ def run(args: argparse.Namespace) -> None:
                 peak_depth_m = float(np.max(values_at_time))
                 peak_time_min = parse_elapsed_minutes(raster_path)
         max_depth_m = float(np.max(values))
-        area_over_threshold_ratio = float(np.count_nonzero(values >= args.depth_threshold_m)) / len(values)
+        # 面積比は地上面積で重み付けする（EPSG:3857では行ごとにセル面積がわずかに異なる）。
+        area_over_threshold_ratio = float(areas[over_threshold].sum() / areas.sum())
         output_towns[name] = {
             "max_depth_m": max_depth_m,
-            "mean_depth_m": float(np.mean(values)),
-            "area_over_threshold_m2": float(np.count_nonzero(values >= args.depth_threshold_m)) * cell_area_m2,
+            "mean_depth_m": float(np.average(values, weights=areas)),
+            "area_over_threshold_m2": float(areas[over_threshold].sum()),
             "area_over_threshold_ratio": area_over_threshold_ratio,
             "risk_level": risk_level(area_over_threshold_ratio),
             "peak_time_min": peak_time_min,

@@ -96,7 +96,7 @@ CSV2の全708,938点を同じ作業上の解釈でWGS84座標へ変換し、`dat
 Phase 1〜3で「座標系OK」「浸水深0の意味が判明」まで確認でき、同じ2018年版の比較対象を確保した場合に限り、以下は担当者・後続LLMが引き取って実装する。
 本手順書のPhase 4までは目視検証が目的であり、下記の自動化・pipeline統合は含まない。
 
-1. CSV点群をメッシュポリゴンまたはラスタへ変換し、EPSG:6677で`pysheds_surface_routing/sc_153mmh_24h_690mm_official`のモデル格子と整列する
+1. CSV点群をメッシュポリゴンまたはラスタへ変換し、`pysheds_surface_routing/sc_153mmh_24h_690mm_official`のモデル格子（EPSG:3857、`sc_100mm_extreme/dem_raw_epsg3857.tif` と同じ格子）と整列する。面積はセルの地上面積で求める（`tools/run_surface_water_balance.py` の `ground_cell_areas_m2`）
    - 格子サイズ・セル中心か格子交点か・ゼロ値の扱いを、Phase 3で確定した定義に従って固定する
 2. CSV点群を受け付ける専用の変換処理を新設する。既存の`tools/preprocess_hazard_geojson.py`は**Polygon / MultiPolygon専用**であり、CSVを直接渡せない
 3. 2026年PDF派生ベクタとのIoU評価や置き換えは行わない。2018年版の同一図面に対応する比較対象、または2026年版の数値・GIS原典が得られた場合に、評価設計を作り直す

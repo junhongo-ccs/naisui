@@ -3,6 +3,13 @@
   "model": "experimental pysheds D8 routing with depression capacity and overflow",
   "depression_threshold_m": 0.01,
   "max_depression_depth_m": null,
+  "runoff_coefficient_raster": null,
+  "runoff_coefficient_mean": null,
+  "cell_area_m2_range": [
+    15.04803616553545,
+    15.061348408460617
+  ],
+  "cell_area_note": "体積・面積は楕円体上の地上面積で計算（EPSG:3857の名目画素面積は使わない）",
   "limitations": [
     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
     "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。"

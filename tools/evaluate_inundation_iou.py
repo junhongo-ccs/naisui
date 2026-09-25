@@ -11,6 +11,8 @@ import numpy as np
 import rasterio
 from rasterio.features import rasterize
 
+from run_surface_water_balance import ground_cell_areas_m2
+
 
 def evaluate(model_path: Path, hazard: gpd.GeoDataFrame, threshold_m: float, hazard_depth_field: str | None) -> dict[str, object]:
     with rasterio.open(model_path) as dataset:
@@ -30,17 +32,18 @@ def evaluate(model_path: Path, hazard: gpd.GeoDataFrame, threshold_m: float, haz
             dtype="uint8",
             all_touched=True,
         ).astype(bool) & valid
-        intersection = np.count_nonzero(model_mask & hazard_mask)
-        union = np.count_nonzero(model_mask | hazard_mask)
-        cell_area_m2 = abs(dataset.transform.a * dataset.transform.e)
+        # EPSG:3857の名目画素面積は地上面積の約1.5倍になるため、行ごとの地上面積で集計する。
+        cell_area_m2 = np.broadcast_to(ground_cell_areas_m2(dataset.transform, dataset.crs, model.shape[0]), model.shape)
+    intersection = float(cell_area_m2[model_mask & hazard_mask].sum())
+    union = float(cell_area_m2[model_mask | hazard_mask].sum())
     return {
         "model": str(model_path),
         "threshold_m": threshold_m,
         "iou_jaccard": intersection / union if union else None,
-        "intersection_area_m2": intersection * cell_area_m2,
-        "union_area_m2": union * cell_area_m2,
-        "model_area_m2": np.count_nonzero(model_mask) * cell_area_m2,
-        "hazard_area_m2": np.count_nonzero(hazard_mask) * cell_area_m2,
+        "intersection_area_m2": intersection,
+        "union_area_m2": union,
+        "model_area_m2": float(cell_area_m2[model_mask].sum()),
+        "hazard_area_m2": float(cell_area_m2[hazard_mask].sum()),
     }
 
 

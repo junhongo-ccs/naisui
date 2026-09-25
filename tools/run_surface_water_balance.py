@@ -31,6 +31,38 @@ class DemMosaic:
     crs: str
 
 
+def ground_cell_areas_m2(transform: rasterio.Affine, crs: object, height: int) -> np.ndarray:
+    """Return the true ground area (m²) of the cells in each row, shaped (height, 1).
+
+    EPSG:3857の座標値は北緯35.6度で地上距離の約1/cos(φ)倍（約1.23倍）に伸びており、
+    |transform.a * transform.e| をそのまま面積にすると約1.5倍の過大になる。
+    Web Mercatorと地理座標系の格子では、行ごとのセルの楕円体上の面積を求める。
+    その他の投影座標系（EPSG:6677等）では、座標値の単位がほぼ地上のmなので名目面積を使う。
+    """
+    from pyproj import CRS, Geod, Transformer
+
+    if transform.b != 0 or transform.d != 0:
+        raise ValueError("Rotated raster grids are not supported.")
+    source = CRS.from_user_input(crs)
+    if source.is_projected and source.to_epsg() != 3857:
+        return np.full((height, 1), abs(transform.a * transform.e), dtype=np.float64)
+    to_lonlat = Transformer.from_crs(source, "EPSG:4326", always_xy=True)
+    edges_y = transform.f + np.arange(height + 1) * transform.e
+    left_x = np.full(height + 1, transform.c)
+    right_x = left_x + transform.a
+    left_lon, edge_lat = to_lonlat.transform(left_x, edges_y)
+    right_lon, _ = to_lonlat.transform(right_x, edges_y)
+    geod = Geod(ellps="WGS84")
+    areas = np.empty((height, 1), dtype=np.float64)
+    for row in range(height):
+        area, _ = geod.polygon_area_perimeter(
+            [left_lon[row], right_lon[row], right_lon[row + 1], left_lon[row + 1]],
+            [edge_lat[row], edge_lat[row], edge_lat[row + 1], edge_lat[row + 1]],
+        )
+        areas[row, 0] = abs(area)
+    return areas
+
+
 def decode_gsi_elevation(path: Path) -> np.ndarray:
     """Decode a GSI DEM PNG tile to elevations in metres."""
     rgba = np.asarray(Image.open(path).convert("RGBA"), dtype=np.int64)
@@ -239,6 +271,9 @@ def run(args: argparse.Namespace) -> None:
     mosaic = load_dem_tiles(args.dem_tiles, args.zoom)
     scenario_id, scenario = load_scenario(args.scenario, drainage_mmh, args.scenario_id)
     valid = np.isfinite(mosaic.elevation_m)
+    cell_area_m2 = np.broadcast_to(
+        ground_cell_areas_m2(mosaic.transform, mosaic.crs, mosaic.elevation_m.shape[0]), mosaic.elevation_m.shape
+    )
     direction, destination_rows, destination_cols, can_route = d8_flow_direction(mosaic.elevation_m)
     accumulation = d8_flow_accumulation(mosaic.elevation_m, destination_rows, destination_cols, can_route)
     depth_m = np.zeros_like(mosaic.elevation_m, dtype=np.float32)
@@ -269,9 +304,8 @@ def run(args: argparse.Namespace) -> None:
                 "rainfall_mm_hr": row["rainfall_mm_hr"],
                 "net_input_mm_hr": net_input_m * 1000.0,
                 "maximum_depth_m": float(np.nanmax(depth_m[valid])),
-                "stored_volume_m3": float(np.sum(depth_m[valid])) * abs(mosaic.transform.a * mosaic.transform.e),
-                "ponded_area_m2": float(np.count_nonzero(depth_m[valid] > args.ponding_threshold_m))
-                * abs(mosaic.transform.a * mosaic.transform.e),
+                "stored_volume_m3": float(np.sum(depth_m[valid] * cell_area_m2[valid])),
+                "ponded_area_m2": float(np.sum(cell_area_m2[valid & (depth_m > args.ponding_threshold_m)])),
             }
         )
 

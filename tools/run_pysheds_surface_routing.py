@@ -16,7 +16,7 @@ import numpy as np
 import rasterio
 from pysheds.grid import Grid
 
-from run_surface_water_balance import DemMosaic, load_dem_tiles, load_scenario, write_geotiff
+from run_surface_water_balance import DemMosaic, ground_cell_areas_m2, load_dem_tiles, load_scenario, write_geotiff
 
 # pysheds 0.4.x calls the removed NumPy 1.x alias internally.
 if not hasattr(np, "in1d"):
@@ -50,7 +50,7 @@ def route_step(
     local_excess_m3: np.ndarray,
     stored_m3: np.ndarray,
     storage_capacity_m3: np.ndarray,
-    drainage_m3_per_cell: float,
+    drainage_m3_per_cell: np.ndarray,
     destination: np.ndarray,
     downstream_order: np.ndarray,
 ) -> np.ndarray:
@@ -128,7 +128,8 @@ def run(args: argparse.Namespace) -> None:
     destination = d8_destinations(np.asarray(flow_direction), valid)
     downstream_order = np.argsort(np.where(valid, np.asarray(conditioned_dem), -np.inf).ravel())[::-1]
 
-    cell_area_m2 = abs(mosaic.transform.a * mosaic.transform.e)
+    # EPSG:3857では名目の画素面積が地上面積の約1.5倍になるため、行ごとの地上面積を使う。
+    cell_area_m2 = np.broadcast_to(ground_cell_areas_m2(mosaic.transform, mosaic.crs, raw_dem.shape[0]), raw_dem.shape)
     # セル別流出係数（PLATEAU導入計画フェーズ1）。省略時は降雨シナリオの一律値を使う。
     runoff_coefficient = load_runoff_coefficient(args.runoff_coefficient_raster, mosaic) if args.runoff_coefficient_raster else None
     if runoff_coefficient is not None and any(row["runoff_coefficient"] != 1.0 for row in scenario):
@@ -161,7 +162,7 @@ def run(args: argparse.Namespace) -> None:
                 "rainfall_mm_hr": row["rainfall_mm_hr"],
                 "maximum_depth_m": float(np.max(depth_m[valid])),
                 "stored_volume_m3": float(np.sum(stored_m3[valid])),
-                "ponded_area_m2": float(np.count_nonzero(depth_m[valid] >= args.ponding_threshold_m)) * cell_area_m2,
+                "ponded_area_m2": float(np.sum(cell_area_m2[valid & (depth_m >= args.ponding_threshold_m)])),
             }
         )
 
@@ -184,6 +185,8 @@ def run(args: argparse.Namespace) -> None:
                 "max_depression_depth_m": args.max_depression_depth_m,
                 "runoff_coefficient_raster": str(args.runoff_coefficient_raster) if args.runoff_coefficient_raster else None,
                 "runoff_coefficient_mean": float(runoff_coefficient[valid].mean()) if runoff_coefficient is not None else None,
+                "cell_area_m2_range": [float(cell_area_m2.min()), float(cell_area_m2.max())],
+                "cell_area_note": "体積・面積は楕円体上の地上面積で計算（EPSG:3857の名目画素面積は使わない）",
                 "limitations": [
                     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
                     "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。",
