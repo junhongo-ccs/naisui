@@ -13,6 +13,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from .data import MODEL_INFO
+
 # 実績照合レビュー(docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md 第2章)のtied-rank Spearman ρ。
 # UIでは実績を主張の根拠にせず、モデル推定が過去傾向とどれだけ整合するかの参考値として示す
 # （docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md 第6章「モデルと浸水実績データの提示方針」）。
@@ -49,8 +51,9 @@ def generate(
         "status": "caution" if risk_level != "湛水なし（本簡易モデル上）" else "official_notice",
         "facts": facts,
         "model_context": (
-            "この結果は校正前のスクリーニングモデルによる試行的なシナリオ結果であり、"
+            f"この結果は{MODEL_INFO['label']}（試行的なシナリオ計算）であり、"
             "実際の浸水予報ではありません。個別地点の浸水深予報・避難判断には使用しないでください。"
+            f"{MODEL_INFO['assumption']}（{MODEL_INFO['data_versions']}）。{MODEL_INFO['not_evaluated']}。"
         ),
         "safe_next_steps": [
             "最新の公式な避難情報・気象警報を確認してください。",
@@ -63,7 +66,7 @@ def generate(
         },
         "sources": [
             {
-                "name": "naisui PoC モデル (pysheds_surface_routing, 校正前)",
+                "name": f"naisui PoC モデル (pysheds_surface_routing + PLATEAU土地利用 {MODEL_INFO['version']}, 校正前)",
                 "retrieved_at": run_metadata.get("generated_at", datetime.now(timezone.utc).isoformat()),
             },
             {

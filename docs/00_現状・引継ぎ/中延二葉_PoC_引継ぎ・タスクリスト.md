@@ -6,6 +6,16 @@
 
 **2026-09-24 CSV座標検証の引継ぎ**: `docs/00_現状・引継ぎ/中延二葉_2026-09-24_CSV座標検証_引継ぎ.md`。Tokyo Datum解釈で作成したCSV2全件GeoPackage、QGISプロジェクトの保存状態、PDFとの比較で言える範囲、PoC本体に戻る際の判断を記録した。
 
+## 2026-09-25 追記: PLATEAU土地利用反映版を採用
+
+`docs/01_概要・計画/PLATEAU導入計画.md` のフェーズ0B・0・1を実施し、ユーザー決定により**土地利用反映版（`plateau2025_v1_base`）を採用パイプライン**とした。
+
+- 採用版の出力: `data/naisui_poc/02_processed/pysheds_surface_routing_landuse/plateau2025_v1_base/sc_153mmh_24h_690mm_official/`。バックエンド（`backend/app/data.py` の `PIPELINE_DIR`）とWeb地図オーバーレイを切り替え済み
+- 採用版は `pysheds_surface_routing` の同じモデルに、PLATEAU土地利用・建物から求めたセル別流出係数（`--runoff-coefficient-raster`）を入れたもの。現行一律版（`pysheds_surface_routing/sc_153mmh_24h_690mm_official/`）は比較用に残す
+- 実績との順位相関は一律版と統計的に区別できない（R7.9.11でρ=+0.436、一律版+0.460、n=10）。採用は精度の改善を根拠としたものではなく、流出条件を土地利用に基づけるための判断である。詳細は `docs/03_モデル検証/中延二葉_土地利用反映モデル比較.md`
+- 面積・体積の計算を地上面積に修正した（旧出力は約1.52倍の過大。計画 2.2節）
+- 画面とチャット回答には、土地利用反映版であること、データの版、下水道・避難可否・通行可否を評価していないことを表示する（`MODEL_INFO`）
+
 ## 2026-09-15 追記: モデル実績照合とパイプライン確定
 
 本文書 5章「明日の優先タスクリスト」の「Pyshedsの流向・窪地処理と簡易湛水モデルの役割を比較し、最終採用モデルを決める」は決着した。詳細は `docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md`。
@@ -21,7 +31,7 @@
 
 次回は、以下を**完了済みの決定**として扱い、再検討・再実行しない。
 
-- 採用パイプラインは `pysheds_surface_routing`。`surface_water_balance` v1は比較用の参考結果である。
+- 採用パイプラインは `pysheds_surface_routing` に土地利用によるセル別流出係数を入れた `pysheds_surface_routing_landuse/plateau2025_v1_base`（2026-09-25、ユーザー決定）。一律版 `pysheds_surface_routing` と `surface_water_balance` v1は比較用の参考結果である。
 - 現行シナリオは `sc_153mmh_24h_690mm_official` のみである。区の想定最大規模降雨（1時間153mm・24時間690mm）に合わせ、`pysheds_surface_routing`、`risk_lookup`、Web地図オーバーレイを生成済みである。旧 `sc_50mm_const` / `sc_80mm_peak` / `sc_100mm_extreme` は過去成果物であり、新規実行・API・UIには使わない。
 - 町丁目別リスクのラベル根拠は `max_depth_m` ではなく `area_over_threshold_ratio` である。
 - 校正参照はR7.9.11浸水実績を主、31年累計を長期傾向の参考として併用する。

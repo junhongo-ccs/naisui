@@ -60,6 +60,7 @@ def get_scenario(scenario_id: str) -> dict:
     return {
         "scenario_id": scenario_id,
         "calibration_status": "pre_calibration_screening",
+        "model": data.MODEL_INFO,
         "depth_threshold_m": risk_lookup.get("depth_threshold_m"),
         "towns": towns_by_slug,
         "map_layers": {

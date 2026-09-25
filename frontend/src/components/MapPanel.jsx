@@ -290,8 +290,14 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
       <div className="absolute bottom-2 left-2 flex flex-col gap-1 items-start">
-        <div className="bg-white/90 rounded px-2 py-1 text-xs text-amber-700 border border-amber-200 pointer-events-none">
-          校正前のスクリーニング結果
+        {/* モデルの前提はAPIのmodel（backend/app/data.py MODEL_INFO）から表示する（PLATEAU導入計画 7章）。 */}
+        <div className="bg-white/90 rounded px-2 py-1 text-xs text-amber-700 border border-amber-200 pointer-events-none max-w-md">
+          <div>{scenarioDetail?.model?.label ?? "校正前のスクリーニング結果"}</div>
+          {scenarioDetail?.model && (
+            <div className="text-gray-600">
+              {scenarioDetail.model.data_versions}。{scenarioDetail.model.not_evaluated}。
+            </div>
+          )}
         </div>
         {scenarioDetail?.scenario_id === "sc_50mm_const" && (
           <div className="bg-white/90 rounded px-2 py-1 text-xs text-gray-600 border border-gray-200 pointer-events-none">

@@ -16,8 +16,19 @@ PROCESSED = ROOT / "data/naisui_poc/02_processed"
 RAW = ROOT / "data/naisui_poc/01_raw"
 WEB_MAP = PROCESSED / "web_map"
 
-# 採用パイプライン。docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md で確定。
-PIPELINE_DIR = PROCESSED / "pysheds_surface_routing"
+# 採用パイプライン。pysheds地表流モデル（docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md で確定）に、
+# PLATEAU土地利用・建物によるセル別流出係数（標準係数）を入れた版を2026-09-25に採用（ユーザー決定）。
+# 比較と採用の経緯: docs/03_モデル検証/中延二葉_土地利用反映モデル比較.md
+PIPELINE_DIR = PROCESSED / "pysheds_surface_routing_landuse/plateau2025_v1_base"
+
+# 画面・回答に必ず併記するモデルの前提（docs/01_概要・計画/PLATEAU導入計画.md 7章）。
+MODEL_INFO: dict[str, Any] = {
+    "label": "土地利用を反映した校正前スクリーニング結果",
+    "version": "plateau2025_v1_base",
+    "data_versions": "土地利用: 東京都土地利用現況調査2021（PLATEAU 2025年度版）、建物: PLATEAU 2025年度版",
+    "assumption": "土地利用と建物から、雨水が地表へ流出する割合（流出係数）をセルごとに仮定しています",
+    "not_evaluated": "下水道の管路、避難の可否、道路の通行可否は評価していません",
+}
 
 SCENARIOS: list[dict[str, Any]] = [
     {"scenario_id": "sc_153mmh_24h_690mm_official", "label": "想定最大規模降雨 (1時間153mm・24時間690mm)", "default": True},
