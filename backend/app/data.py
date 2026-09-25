@@ -8,6 +8,8 @@ re-fetch or re-compute anything (docs/02_仕様・要件/UI_デザイン受け�
 from __future__ import annotations
 
 import json
+import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -49,6 +51,28 @@ TOWN_SLUGS: dict[str, str] = {
     "二葉四丁目": "futaba-4",
 }
 SLUG_TO_TOWN = {v: k for k, v in TOWN_SLUGS.items()}
+
+# 自由入力の町丁目名の読み取り。「二葉二丁目」「二葉2丁目」「二葉２」「中延 6丁目」などを受け付ける。
+# 丁目の無い「二葉」や「荏原中延」は丁目が特定できないので読み取らない（推測で補わない）。
+_KANJI_DIGITS = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
+_TOWN_MENTION = re.compile(r"(中延|二葉)\s*([1-9一二三四五六七八九])(?![0-9])\s*(?:丁目)?")
+
+
+def towns_mentioned(message: str) -> list[str]:
+    """メッセージに書かれた町丁目名（TOWN_SLUGSのキー表記）を出現順に重複なく返す。
+
+    対象外の丁目（中延七丁目など）は "対象外:<表記>" として返し、呼び出し側で確認を促す。
+    """
+    text = unicodedata.normalize("NFKC", message)  # 全角数字・全角スペースを半角へ
+    found: list[str] = []
+    for area, digit in _TOWN_MENTION.findall(text):
+        number = int(digit) if digit.isdigit() else _KANJI_DIGITS[digit]
+        kanji = next((k for k, v in _KANJI_DIGITS.items() if v == number), str(number))
+        name = f"{area}{kanji}丁目"
+        entry = name if name in TOWN_SLUGS else f"対象外:{name}"
+        if entry not in found:
+            found.append(entry)
+    return found
 
 
 def _load_json(path: Path) -> dict[str, Any]:

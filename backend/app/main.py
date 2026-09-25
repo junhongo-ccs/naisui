@@ -84,7 +84,16 @@ def chat(req: ChatRequest) -> ChatResponse:
         contract = policy.emergency_response()
         return _to_chat_response(contract, contract["headline"])
 
-    town_name = data.SLUG_TO_TOWN.get(req.town_slug) if req.town_slug else None
+    # メッセージに町丁目名があればそれを優先し、無ければボタン・地図で選んだ町丁目を使う。
+    # 複数の町丁目・対象外の丁目が書かれている場合は、推測せず確認を求める。
+    mentioned = data.towns_mentioned(req.message)
+    if len(mentioned) > 1 or any(name.startswith("対象外:") for name in mentioned):
+        contract = policy.ambiguous_location_response()
+        return _to_chat_response(contract, contract["headline"])
+    if mentioned:
+        town_name: str | None = mentioned[0]
+    else:
+        town_name = data.SLUG_TO_TOWN.get(req.town_slug) if req.town_slug else None
     if town_name is None:
         contract = policy.ambiguous_location_response()
         return _to_chat_response(contract, contract["headline"])
@@ -102,10 +111,10 @@ def chat(req: ChatRequest) -> ChatResponse:
         official_status=official_status,
         run_metadata=run_metadata,
     )
-    return _to_chat_response(contract, contract["headline"])
+    return _to_chat_response(contract, contract["headline"], data.TOWN_SLUGS[town_name])
 
 
-def _to_chat_response(contract: dict, headline: str) -> ChatResponse:
+def _to_chat_response(contract: dict, headline: str, town_slug: str | None = None) -> ChatResponse:
     lines = [headline, ""]
     lines.extend(f"・{fact}" for fact in contract["facts"])
     if contract["facts"]:
@@ -114,4 +123,4 @@ def _to_chat_response(contract: dict, headline: str) -> ChatResponse:
     if contract["safe_next_steps"]:
         lines.append("")
         lines.extend(f"→ {step}" for step in contract["safe_next_steps"])
-    return ChatResponse(display_text="\n".join(lines), **contract)
+    return ChatResponse(display_text="\n".join(lines), town_slug=town_slug, **contract)

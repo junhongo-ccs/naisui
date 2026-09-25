@@ -73,6 +73,11 @@ export default function App() {
         scenario_id: scenarioId,
         town_slug: selectedTown?.slug ?? null,
       });
+      // メッセージ中の町丁目名をバックエンドが読み取った場合は、画面の選択状態（地図の強調表示）も合わせる。
+      if (res.town_slug && res.town_slug !== selectedTown?.slug) {
+        const town = towns.find((t) => t.slug === res.town_slug);
+        if (town) setSelectedTown(town);
+      }
       setMessages((prev) => [
         ...prev,
         {
