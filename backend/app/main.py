@@ -85,8 +85,13 @@ def chat(req: ChatRequest) -> ChatResponse:
         return _to_chat_response(contract, contract["headline"])
 
     # メッセージに町丁目名があればそれを優先し、無ければボタン・地図で選んだ町丁目を使う。
-    # 複数の町丁目・対象外の丁目が書かれている場合は、推測せず確認を求める。
+    # 複数の町丁目・対象外の丁目、町丁目として読めない場所（「下神明あたり」等）が書かれている場合は、
+    # 選択中の町丁目で答えず、推測せず確認を求める。
     mentioned = data.towns_mentioned(req.message)
+    other_places = data.unrecognized_places(req.message)
+    if other_places:
+        contract = policy.ambiguous_location_response(unrecognized_place=other_places[0])
+        return _to_chat_response(contract, contract["headline"])
     if len(mentioned) > 1 or any(name.startswith("対象外:") for name in mentioned):
         contract = policy.ambiguous_location_response()
         return _to_chat_response(contract, contract["headline"])

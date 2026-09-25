@@ -75,6 +75,24 @@ def towns_mentioned(message: str) -> list[str]:
     return found
 
 
+# 「下神明あたり」「戸越公園駅の近く」のように場所を指す言い方。町丁目名として読めない場所が書かれて
+# いるときに、選択中の町丁目で黙って答えないために使う（駅名・地名から町丁目への変換は推測になるのでしない）。
+_PLACE_MENTION = re.compile(r"([^\s、。,.!?「」『』()はもがのをにでとへや]{1,12}?)の?(?:あたり|辺り|付近|周辺|近辺|近く|界隈|周り|方面|駅)")
+# 選択中の町丁目を指すとみなす語。「この辺り」は「こ」＋「の」＋「辺り」と読まれるため、こ・そ・あ・どの1文字も含める。
+_DEICTIC_PLACES = {"こ", "そ", "あ", "ど", "この", "その", "あの", "ここ", "そこ", "こちら", "うち", "自宅", "家", "現在地", "今いる所"}
+
+
+def unrecognized_places(message: str) -> list[str]:
+    """場所を指す言い方のうち、対象の町丁目名として読み取れないもの（「下新明」等）を返す。"""
+    text = unicodedata.normalize("NFKC", message)
+    places: list[str] = []
+    for place in _PLACE_MENTION.findall(text):
+        if place in _DEICTIC_PLACES or _TOWN_MENTION.search(place) or place in places:
+            continue
+        places.append(place)
+    return places
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 

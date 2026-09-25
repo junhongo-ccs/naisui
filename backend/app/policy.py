@@ -63,12 +63,19 @@ def emergency_response() -> dict[str, Any]:
     }
 
 
-def ambiguous_location_response() -> dict[str, Any]:
+def ambiguous_location_response(unrecognized_place: str | None = None) -> dict[str, Any]:
+    if unrecognized_place:
+        context = (
+            f"「{unrecognized_place}」は対象の町丁目（中延一〜六丁目、二葉一〜四丁目）として特定できないため、"
+            "推測で地点を補完していません。"
+        )
+    else:
+        context = "町丁目が未指定のため、推測で地点を補完していません。"
     return {
         "headline": "対象の町丁目を教えてください",
         "status": "insufficient_data",
         "facts": [],
-        "model_context": "町丁目が未指定のため、推測で地点を補完していません。",
+        "model_context": context,
         "safe_next_steps": ["画面のボタンから対象の町丁目を選択するか、町丁目名を入力してください。"],
         "prohibited_claim_check": {
             "route_instruction": False,
