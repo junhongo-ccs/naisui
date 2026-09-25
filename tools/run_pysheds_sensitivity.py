@@ -38,6 +38,8 @@ def main() -> None:
                 max_depression_depth_m=cap,
                 ponding_threshold_m=0.01,
                 runoff_coefficient_raster=None,
+                building_fraction_raster=None,
+                building_threshold=0.5,
             )
         )
 

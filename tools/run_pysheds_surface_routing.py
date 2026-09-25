@@ -53,13 +53,17 @@ def route_step(
     drainage_m3_per_cell: np.ndarray,
     destination: np.ndarray,
     downstream_order: np.ndarray,
-) -> np.ndarray:
-    """Route local excess once; retain in depressions and pass only overflow onward."""
+) -> tuple[np.ndarray, float]:
+    """Route local excess once; retain in depressions and pass only overflow onward.
+
+    Returns the new storage and the volume (m³) that left the domain at terrain outlets.
+    """
     stored = np.maximum(0.0, stored_m3 - drainage_m3_per_cell)
     incoming = local_excess_m3.ravel().astype(np.float64, copy=True)
     stored_flat = stored.ravel()
     capacity_flat = storage_capacity_m3.ravel()
     destination_flat = destination.ravel()
+    outflow_m3 = 0.0
 
     for source in downstream_order:
         water = incoming[source]
@@ -72,8 +76,44 @@ def route_step(
         target = destination_flat[source]
         if overflow > 0 and target >= 0:
             incoming[target] += overflow
-        # At a terrain outlet, overflow intentionally leaves the analysis domain.
-    return stored
+        elif overflow > 0:
+            # At a terrain outlet, overflow intentionally leaves the analysis domain.
+            outflow_m3 += overflow
+    return stored, outflow_m3
+
+
+D8_DISTANCE = {code: (2**0.5 if row_offset and col_offset else 1.0) for code, (row_offset, col_offset) in D8_OFFSETS.items()}
+
+
+def avoid_buildings(
+    destination: np.ndarray, conditioned_dem: np.ndarray, building: np.ndarray, valid: np.ndarray
+) -> tuple[np.ndarray, int, int]:
+    """建物セルへ水を流し込まないよう、D8の流下先を付け替える（PLATEAU導入計画フェーズ2）。
+
+    各セルから、整形DEMで厳密に低い建物以外の隣接セルのうち最も急な方向へ流す。
+    そのようなセルが無い場合は元の流下先を残す。流下先は常に整形DEMで低いセルなので、
+    downstream_order（整形DEMの降順）の処理順は保たれ、循環も生じない。
+    """
+    rows, cols = np.indices(conditioned_dem.shape)
+    best_slope = np.zeros(conditioned_dem.shape, dtype=np.float64)
+    best_target = np.full(conditioned_dem.shape, -1, dtype=np.int64)
+    for code, (row_offset, col_offset) in D8_OFFSETS.items():
+        target_row = rows + row_offset
+        target_col = cols + col_offset
+        inside = (target_row >= 0) & (target_row < rows.shape[0]) & (target_col >= 0) & (target_col < rows.shape[1])
+        target_row = np.clip(target_row, 0, rows.shape[0] - 1)
+        target_col = np.clip(target_col, 0, rows.shape[1] - 1)
+        slope = (conditioned_dem - conditioned_dem[target_row, target_col]) / D8_DISTANCE[code]
+        usable = inside & valid & valid[target_row, target_col] & ~building[target_row, target_col] & (slope > best_slope)
+        best_slope = np.where(usable, slope, best_slope)
+        best_target = np.where(usable, target_row * rows.shape[1] + target_col, best_target)
+    rerouted = (best_target >= 0) & (best_target != destination) & valid
+    into_building = valid & (destination >= 0) & building.ravel()[np.maximum(destination, 0)].reshape(destination.shape)
+    new_destination = np.where(best_target >= 0, best_target, destination)
+    new_destination[~valid] = -1
+    # 建物以外のセルで、低い建物以外の隣接セルが無いため建物へ流れ続けるもの（格子の粗さによる近似の限界）。
+    still_into_building = int(np.count_nonzero(into_building & (best_target < 0) & ~building))
+    return new_destination, int(np.count_nonzero(rerouted)), still_into_building
 
 
 def load_runoff_coefficient(path: Path, mosaic: DemMosaic) -> np.ndarray:
@@ -90,6 +130,21 @@ def load_runoff_coefficient(path: Path, mosaic: DemMosaic) -> np.ndarray:
     if not np.all(np.isfinite(coefficient)) or coefficient.min() < 0 or coefficient.max() > 1:
         raise ValueError("Runoff coefficients must be finite and between 0 and 1.")
     return coefficient
+
+
+def load_building_fraction(path: Path, mosaic: DemMosaic) -> np.ndarray:
+    """surface_fraction の「建物・屋根」バンドを読む。DEMと同じ格子であることを確認する。"""
+    with rasterio.open(path) as dataset:
+        if not (
+            dataset.shape == mosaic.elevation_m.shape
+            and dataset.transform.almost_equals(mosaic.transform)
+            and str(dataset.crs) == str(mosaic.crs)
+        ):
+            raise ValueError(f"Building fraction raster does not match the DEM grid: {path}")
+        bands = [index for index, name in enumerate(dataset.descriptions, start=1) if name == "建物・屋根"]
+        if not bands:
+            raise ValueError(f"No '建物・屋根' band in {path}")
+        return dataset.read(bands[0]).astype(np.float64)
 
 
 def run(args: argparse.Namespace) -> None:
@@ -135,6 +190,23 @@ def run(args: argparse.Namespace) -> None:
     if runoff_coefficient is not None and any(row["runoff_coefficient"] != 1.0 for row in scenario):
         raise ValueError("Use a scenario with runoff_coefficient=1.0 together with --runoff-coefficient-raster to avoid applying both.")
     storage_capacity_m3 = depression_depth_m * cell_area_m2
+    # 建物による流下の遮断（PLATEAU導入計画フェーズ2）。建物セルは貯留せず、水を流し込まない。
+    building_stats: dict[str, object] | None = None
+    if args.building_fraction_raster:
+        building = (load_building_fraction(args.building_fraction_raster, mosaic) >= args.building_threshold) & valid
+        destination, rerouted_cells, still_into_building = avoid_buildings(
+            destination, np.asarray(conditioned_dem, dtype=np.float64), building, valid
+        )
+        storage_capacity_m3 = np.where(building, 0.0, storage_capacity_m3)
+        building_stats = {
+            "building_fraction_raster": str(args.building_fraction_raster),
+            "building_threshold": args.building_threshold,
+            "building_cells": int(np.count_nonzero(building)),
+            "building_cell_share": float(np.count_nonzero(building) / np.count_nonzero(valid)),
+            "rerouted_cells": rerouted_cells,
+            "open_cells_still_draining_into_buildings": still_into_building,
+            "storage_removed_m3": float(np.sum(depression_depth_m[building] * cell_area_m2[building])),
+        }
     stored_m3 = np.zeros_like(raw_dem, dtype=np.float64)
     maximum_depth_m = np.zeros_like(raw_dem, dtype=np.float32)
     summary: list[dict[str, float]] = []
@@ -147,9 +219,14 @@ def run(args: argparse.Namespace) -> None:
         else:
             excess_m = np.maximum(0.0, row["rainfall_mm_hr"] * runoff_coefficient - row["capacity_mm_hr"]) / 1000.0 * step_hours
         local_excess_m3 = np.where(valid, excess_m * cell_area_m2, 0.0)
-        stored_m3 = route_step(
+        previous_total_m3 = float(np.sum(stored_m3))
+        drained_m3 = float(np.sum(np.minimum(stored_m3, drainage_m3_per_cell)))
+        stored_m3, outflow_m3 = route_step(
             local_excess_m3, stored_m3, storage_capacity_m3, drainage_m3_per_cell, destination, downstream_order
         )
+        input_m3 = float(np.sum(local_excess_m3))
+        # 水量保存の点検: 前ステップの貯留 + 流入 − 排水 − 域外流出 = 今ステップの貯留
+        balance_residual_m3 = previous_total_m3 + input_m3 - drained_m3 - outflow_m3 - float(np.sum(stored_m3))
         depth_m = (stored_m3 / cell_area_m2).astype(np.float32)
         maximum_depth_m = np.maximum(maximum_depth_m, depth_m)
         elapsed_min = row["elapsed_time_min"] + step_minutes
@@ -163,6 +240,10 @@ def run(args: argparse.Namespace) -> None:
                 "maximum_depth_m": float(np.max(depth_m[valid])),
                 "stored_volume_m3": float(np.sum(stored_m3[valid])),
                 "ponded_area_m2": float(np.sum(cell_area_m2[valid & (depth_m >= args.ponding_threshold_m)])),
+                "input_m3": input_m3,
+                "drained_m3": drained_m3,
+                "outflow_m3": outflow_m3,
+                "balance_residual_m3": balance_residual_m3,
             }
         )
 
@@ -187,6 +268,7 @@ def run(args: argparse.Namespace) -> None:
                 "runoff_coefficient_mean": float(runoff_coefficient[valid].mean()) if runoff_coefficient is not None else None,
                 "cell_area_m2_range": [float(cell_area_m2.min()), float(cell_area_m2.max())],
                 "cell_area_note": "体積・面積は楕円体上の地上面積で計算（EPSG:3857の名目画素面積は使わない）",
+                "building_blocking": building_stats,
                 "limitations": [
                     "地形由来の窪地容量を用いる簡易モデルであり、道路縁石、建物、下水道、雨水ます、ポンプは表現しない。",
                     "ハザード区域・実績地点との校正前であり、避難判断や個別地点の浸水予報に使用しない。",
@@ -214,6 +296,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--depression-threshold-m", type=float, default=0.01)
     parser.add_argument("--max-depression-depth-m", type=float, help="感度分析用の凹地容量上限。省略時は上限なし。")
     parser.add_argument("--ponding-threshold-m", type=float, default=0.01)
+    parser.add_argument(
+        "--building-fraction-raster",
+        type=Path,
+        help="建物・屋根の面積割合を含むGeoTIFF（tools/rasterize_surface_parameters.py の surface_fraction）。"
+        "指定すると建物セルへの流入と貯留を止める。",
+    )
+    parser.add_argument("--building-threshold", type=float, default=0.5, help="建物セルとみなす建物・屋根の面積割合")
     parser.add_argument(
         "--runoff-coefficient-raster",
         type=Path,
