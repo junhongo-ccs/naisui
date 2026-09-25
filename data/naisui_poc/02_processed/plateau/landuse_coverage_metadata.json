@@ -1,0 +1,33 @@
+{
+  "phase": "PLATEAU導入計画 フェーズ0",
+  "generated_at": "2026-09-25T05:21:37+00:00",
+  "inputs": {
+    "landuse": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\luse_2025.gpkg",
+    "buildings": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\bldg_2025.gpkg",
+    "towns": "C:\\github\\naisui\\data\\naisui_poc\\01_raw\\boundaries\\r2kb13109.shp",
+    "mapping": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\plateau\\landuse_category_mapping.csv"
+  },
+  "work_crs": "EPSG:6677",
+  "buffer_m": 100.0,
+  "landuse_features_in_target": 4784,
+  "landuse_change_flag_counts": {
+    "0": 3836,
+    "1": 575,
+    "2": 373
+  },
+  "buildings_in_target": 10571,
+  "building_stats": {
+    "input_features": 32173,
+    "empty_geometries": 832,
+    "polygon_features": 31341,
+    "unique_buildings": 31341,
+    "id_field_found": 1,
+    "repaired_invalid_geometries": 31341
+  },
+  "category_rule": "bldgの建物外形を「建物・屋根」とし、残りの土地利用区画を分類対応表のcategory_outside_buildingsで区分する。",
+  "limitations": [
+    "土地利用は2021年調査、建物は2025年度整備であり、時点が一致しない。",
+    "5区分の割合は分類対応表の仮定に依存する。confidence=lowの区分（特に住宅の建物外部分）はフェーズ1の感度分析で扱う。",
+    "土地利用区分から浸透能・流出係数を直接得られるわけではない。"
+  ]
+}

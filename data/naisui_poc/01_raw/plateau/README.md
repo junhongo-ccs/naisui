@@ -47,3 +47,26 @@ done
 - `-oo EXPOSE_GML_ID=YES` は必須。`Appearance` を含むファイル（LOD2あり）では、これが無いと `gml_id` が列にならず追記が失敗する。
 - `lod1Solid` を平面のMultiPolygonへ変換するため、形状は屋根面と底面が重なった不正な形になる。`tools/count_buildings_by_town.py` が読み込み時に外形へ修復する。
 - `depth_uom` の文字数に関する警告が大量に出るが、GeoPackageでは値は切り捨てられない。
+
+## 土地利用モデル `luse`（フェーズ0）
+
+| ファイル | 内容 |
+| --- | --- |
+| `luse/533935_luse_6697_op.gml` | 土地利用モデル（2次メッシュ533935、約400MB、126,744区画）。区ではなく2次メッシュ単位で、港区・目黒区・大田区等も含む |
+
+- 元データは東京都の土地利用現況調査（`surveyYear` は対象範囲内すべて2021年）。建物（2025年度整備）とは時点が異なる。
+- 区分は2種類ある。`luse:class` は全国共通の区分（`Common_landUseType`）、`uro:orgLandUse` は都の調査の元の区分（`LandUseDetailAttribute_orgLandUse`）。細かい `orgLandUse` を分類対応に使う。
+- 属性に町丁目名・変化フラグ・面積が含まれる。
+
+変換（全区画を一つのGeoPackageへ。約20秒）:
+
+```bash
+ogr2ogr -oo EXPOSE_GML_ID=YES -f GPKG data/naisui_poc/02_processed/plateau/luse_2025.gpkg \
+  data/naisui_poc/01_raw/plateau/luse/533935_luse_6697_op.gml LandUse -nlt MULTIPOLYGON -dim XY -nln luse
+```
+
+カバレッジ確認は `tools/check_landuse_coverage.py`、分類対応表は `data/naisui_poc/02_processed/plateau/landuse_category_mapping.csv`。確認結果（2026-09-25）:
+
+- 中延・二葉＋100mバッファ（1.84km²）を4,784区画が**隙間・重複なく100%覆う**。分類不明（`orgLandUse` 0・90）は無い。
+- 建物外形が土地利用の「道路」区画に載る面積は建物面積の0.04%で、両データの位置ずれは小さい。
+- 5区分の面積割合（対象範囲全体）: 建物・屋根41.9%、道路・舗装18.2%、駐車場等の不浸透面30.3%、緑地7.7%、水面・その他1.9%。ただし31.9%は分類対応表で確度lowの仮定（主に住宅敷地の建物外部分を舗装とみなしたもの）に依存する。
