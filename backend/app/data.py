@@ -17,16 +17,16 @@ RAW = ROOT / "data/naisui_poc/01_raw"
 WEB_MAP = PROCESSED / "web_map"
 
 # 採用パイプライン。pysheds地表流モデル（docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md で確定）に、
-# PLATEAU土地利用・建物によるセル別流出係数（標準係数）を入れた版を2026-09-25に採用（ユーザー決定）。
-# 比較と採用の経緯: docs/03_モデル検証/中延二葉_土地利用反映モデル比較.md
-PIPELINE_DIR = PROCESSED / "pysheds_surface_routing_landuse/plateau2025_v1_base"
+# PLATEAU土地利用・建物によるセル別流出係数（標準係数）と、低い道路セルへの優先流下を入れた版（2026-09-25、ユーザー決定）。
+# 比較と採用の経緯: docs/03_モデル検証/中延二葉_土地利用反映モデル比較.md、中延二葉_道路優先流下モデル比較.md
+PIPELINE_DIR = PROCESSED / "pysheds_surface_routing_roads/plateau2025_v3_road050"
 
 # 画面・回答に必ず併記するモデルの前提（docs/01_概要・計画/PLATEAU導入計画.md 7章）。
 MODEL_INFO: dict[str, Any] = {
-    "label": "土地利用を反映した校正前スクリーニング結果",
-    "version": "plateau2025_v1_base",
+    "label": "土地利用と道路の流れを反映した校正前スクリーニング結果",
+    "version": "plateau2025_v3_road050",
     "data_versions": "土地利用: 東京都土地利用現況調査2021（PLATEAU 2025年度版）、建物: PLATEAU 2025年度版",
-    "assumption": "土地利用と建物から、雨水が地表へ流出する割合（流出係数）をセルごとに仮定しています",
+    "assumption": "土地利用と建物から、雨水が地表へ流出する割合（流出係数）をセルごとに仮定し、雨水は隣の低い道路へ優先して流れるとしています",
     "not_evaluated": "下水道の管路、避難の可否、道路の通行可否は評価していません",
 }
 

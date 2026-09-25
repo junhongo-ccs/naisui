@@ -6,6 +6,16 @@
 
 **2026-09-24 CSV座標検証の引継ぎ**: `docs/00_現状・引継ぎ/中延二葉_2026-09-24_CSV座標検証_引継ぎ.md`。Tokyo Datum解釈で作成したCSV2全件GeoPackage、QGISプロジェクトの保存状態、PDFとの比較で言える範囲、PoC本体に戻る際の判断を記録した。
 
+## 2026-09-25 追記（2）: 道路への優先流下を加えた版を採用
+
+同日、フェーズ2として建物による流下遮断と道路への優先流下を試し、ユーザー決定により**道路優先版（`plateau2025_v3_road050`）を採用パイプライン**とした（前項の `plateau2025_v1_base` を置き換え）。
+
+- 採用版の出力: `data/naisui_poc/02_processed/pysheds_surface_routing_roads/plateau2025_v3_road050/sc_153mmh_24h_690mm_official/`
+- 土地利用反映版に、低い道路セルへ優先して流す扱い（`--road-fraction-raster`、閾値0.5）を加えたもの。地形・窪地容量は変えない
+- 採用版v1より、R7.9.11との順位相関が+0.436→+0.528、31年累計（率）が+0.333→+0.367。道路の閾値・流出係数の感度で向きが変わらない。差は統計的に有意ではない
+- 建物による流下遮断は、結果が閾値に依存するため採用しない
+- 詳細: `docs/03_モデル検証/中延二葉_道路優先流下モデル比較.md`、`中延二葉_建物流下遮断モデル比較.md`
+
 ## 2026-09-25 追記: PLATEAU土地利用反映版を採用
 
 `docs/01_概要・計画/PLATEAU導入計画.md` のフェーズ0B・0・1を実施し、ユーザー決定により**土地利用反映版（`plateau2025_v1_base`）を採用パイプライン**とした。
@@ -31,7 +41,7 @@
 
 次回は、以下を**完了済みの決定**として扱い、再検討・再実行しない。
 
-- 採用パイプラインは `pysheds_surface_routing` に土地利用によるセル別流出係数を入れた `pysheds_surface_routing_landuse/plateau2025_v1_base`（2026-09-25、ユーザー決定）。一律版 `pysheds_surface_routing` と `surface_water_balance` v1は比較用の参考結果である。
+- 採用パイプラインは `pysheds_surface_routing` に土地利用によるセル別流出係数と道路への優先流下を入れた `pysheds_surface_routing_roads/plateau2025_v3_road050`（2026-09-25、ユーザー決定）。土地利用反映版 `plateau2025_v1_base`、一律版 `pysheds_surface_routing`、`surface_water_balance` v1は比較用の参考結果である。
 - 現行シナリオは `sc_153mmh_24h_690mm_official` のみである。区の想定最大規模降雨（1時間153mm・24時間690mm）に合わせ、`pysheds_surface_routing`、`risk_lookup`、Web地図オーバーレイを生成済みである。旧 `sc_50mm_const` / `sc_80mm_peak` / `sc_100mm_extreme` は過去成果物であり、新規実行・API・UIには使わない。
 - 町丁目別リスクのラベル根拠は `max_depth_m` ではなく `area_over_threshold_ratio` である。
 - 校正参照はR7.9.11浸水実績を主、31年累計を長期傾向の参考として併用する。

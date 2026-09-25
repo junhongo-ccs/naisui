@@ -24,6 +24,6 @@
   "no_ponding_threshold_m": 0.01,
   "clipped_to_target_towns_buffer_m": 100,
   "depth_cap_m": 0.3,
-  "source_raster": "data\\naisui_poc\\02_processed\\pysheds_surface_routing_landuse\\plateau2025_v1_base\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
-  "generated_at": "2026-09-25T06:49:38.657967+00:00"
+  "source_raster": "data\\naisui_poc\\02_processed\\pysheds_surface_routing_roads\\plateau2025_v3_road050\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
+  "generated_at": "2026-09-25T07:59:43.192066+00:00"
 }
