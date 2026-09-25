@@ -4,7 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        base: "#FAFAFA",
+        // 背景色。"base" にすると fontSize.base と衝突し、text-base が文字色 #FAFAFA も付けてしまう。
+        surface: "#FAFAFA",
         brand: {
           50: "#effcfa",
           100: "#d6f5f0",

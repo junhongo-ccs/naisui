@@ -93,7 +93,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-base text-gray-900">
+    <div className="h-screen w-screen flex flex-col bg-surface text-gray-900">
       <header className="flex items-center justify-between gap-4 px-4 py-2 border-b border-gray-200 bg-white">
         <div className="font-medium text-sm whitespace-nowrap">中延・二葉 内水氾濫 PoC</div>
         <a
