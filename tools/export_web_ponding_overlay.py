@@ -43,9 +43,10 @@ def target_area_geometry_4326():
     buffered_m = union_m.buffer(TARGET_BUFFER_M)
     return gpd.GeoSeries([buffered_m], crs="EPSG:6677").to_crs("EPSG:4326").iloc[0]
 
-# Sequential blue ramp for the model's screening depth. Deliberately different
-# from hazard_pdf_colour_classes.json's yellow-orange-red so this overlay is
-# never mistaken for the official hazard-map extent.
+# Sequential purple ramp for the model's screening depth. Deliberately different
+# from the official hazard layer (PDF-derived, drawn blue-grey in MapPanel.jsx)
+# so this overlay is never mistaken for the official hazard-map extent
+# (2026-09-25: changed from blue to purple for that reason).
 #
 # NO_PONDING_THRESHOLD_M is intentionally NOT aligned to `depth_threshold_m`
 # (0.2m) used in tools/export_risk_lookup.py's area_over_threshold_ratio.
@@ -60,11 +61,11 @@ def target_area_geometry_4326():
 # 第3章) so the gradient stays legible across the depths that actually occur.
 NO_PONDING_THRESHOLD_M = 0.01
 RAMP_STOPS = [
-    (0.01, (207, 232, 252)),  # just above no-ponding
-    (0.05, (139, 191, 240)),
-    (0.10, (79, 146, 222)),
-    (0.20, (34, 98, 186)),
-    (0.30, (12, 55, 130)),  # cap: anything deeper (incl. DEM artifacts) clamps here
+    (0.01, (226, 206, 242)),  # just above no-ponding
+    (0.05, (196, 160, 230)),
+    (0.10, (160, 107, 212)),
+    (0.20, (120, 58, 180)),
+    (0.30, (80, 20, 130)),  # cap: anything deeper (incl. DEM artifacts) clamps here
 ]
 OVERLAY_ALPHA = 190
 

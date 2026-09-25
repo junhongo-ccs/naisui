@@ -43,6 +43,10 @@ def get_towns() -> list[dict]:
     return [{"name": name, "slug": slug} for name, slug in data.TOWN_SLUGS.items()]
 
 
+def _mtime(path) -> int:
+    return int(path.stat().st_mtime) if path.exists() else 0
+
+
 @app.get("/api/scenario/{scenario_id}")
 def get_scenario(scenario_id: str) -> dict:
     if scenario_id not in store.risk_lookups:
@@ -66,7 +70,8 @@ def get_scenario(scenario_id: str) -> dict:
         "map_layers": {
             "town_boundaries": "/static/web_map/town_boundaries.geojson",
             "hazard_pdf_derived": "/static/web_map/hazard_pdf_derived.geojson",
-            "ponding_overlay_png": f"/static/web_map/ponding_depth_{scenario_id}.png",
+            # 画像を作り直したときにブラウザの古いキャッシュが表示されないよう、更新時刻をURLに付ける。
+            "ponding_overlay_png": f"/static/web_map/ponding_depth_{scenario_id}.png?v={_mtime(data.WEB_MAP / f'ponding_depth_{scenario_id}.png')}",
             "ponding_overlay_bounds": f"/static/web_map/ponding_depth_{scenario_id}.bounds.json",
             "sandbag_locations": "/static/shelter/sandbag_locations_nakanobu_futaba.geojson",
             "shelter_locations": "/static/shelter/shelter_locations_nakanobu_futaba.geojson",

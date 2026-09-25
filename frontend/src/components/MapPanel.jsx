@@ -38,7 +38,7 @@ const TARGET_BOUNDS = [
 
 // hazard_pdf_derived.geojsonのproperties.colorは公式凡例色そのまま（記録として維持）。
 // 表示用の配色はここでdepth_class→色として持つ。OSM基図の薄茶〜橙と衝突して見えづらかったため
-// 青灰系に変更し、ponding-layer（湛水推定、高彩度の青）とは彩度で役割を分けている
+// 青灰系に変更した。ponding-layer（自前モデルの湛水推定）は紫系にして、公式図由来の層と色相で区別する
 // （2026-09-15 naisui-f4提案、docs未反映・要目視確認）。
 const HAZARD_COLOR_BY_CLASS = {
   "0.1m以上0.5m未満": "#bcd2e0",
