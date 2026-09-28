@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-09-25T10:15:57+00:00",
+    "generated_at": "2026-09-28T10:27:31+00:00",
     "model_version": "plateau2025_v3_road050",
     "inputs": {
       "depth": "C:\\github\\naisui\\data\\naisui_poc\\02_processed\\pysheds_surface_routing_roads\\plateau2025_v3_road050\\sc_153mmh_24h_690mm_official\\maximum_ponding_depth_m.tif",
@@ -111,15 +111,24 @@
       },
       "facilities": {
         "shelters_in_town": [
-          "中延小学校"
+          {
+            "name": "中延小学校",
+            "address": "中延1-11-15",
+            "type": "区民避難所"
+          }
         ],
         "nearest_shelter": {
           "name": "中延小学校",
+          "address": "中延1-11-15",
+          "type": "区民避難所",
           "distance_m": 131
         },
         "sandbags_in_town": [],
         "nearest_sandbag": {
           "name": "東急池上線ガード上",
+          "address": "中延3-3",
+          "bags": 200,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 481
         }
       }
@@ -220,13 +229,23 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "延山小学校",
+          "address": "西中延2-17-5",
+          "type": "区民避難所",
           "distance_m": 299
         },
         "sandbags_in_town": [
-          "東急池上線ガード上"
+          {
+            "name": "東急池上線ガード上",
+            "address": "中延3-3",
+            "bags": 200,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "東急池上線ガード上",
+          "address": "中延3-3",
+          "bags": 200,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 96
         }
       }
@@ -350,11 +369,16 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "中延小学校",
+          "address": "中延1-11-15",
+          "type": "区民避難所",
           "distance_m": 207
         },
         "sandbags_in_town": [],
         "nearest_sandbag": {
           "name": "東急池上線ガード上",
+          "address": "中延3-3",
+          "bags": 200,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 195
         }
       }
@@ -566,14 +590,29 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "源氏前小学校",
+          "address": "中延6-2-18",
+          "type": "区民避難所",
           "distance_m": 346
         },
         "sandbags_in_town": [
-          "荏原町公園入口横",
-          "弁天通り公園内"
+          {
+            "name": "荏原町公園入口横",
+            "address": "中延5-14",
+            "bags": 400,
+            "bags_as_of": "令和7年11月13日"
+          },
+          {
+            "name": "弁天通り公園内",
+            "address": "中延5-3",
+            "bags": 200,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "荏原町公園入口横",
+          "address": "中延5-14",
+          "bags": 400,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 113
         }
       }
@@ -762,18 +801,37 @@
       },
       "facilities": {
         "shelters_in_town": [
-          "源氏前小学校"
+          {
+            "name": "源氏前小学校",
+            "address": "中延6-2-18",
+            "type": "区民避難所"
+          }
         ],
         "nearest_shelter": {
           "name": "源氏前小学校",
+          "address": "中延6-2-18",
+          "type": "区民避難所",
           "distance_m": 55
         },
         "sandbags_in_town": [
-          "源氏前公園入り口",
-          "中延六丁目広場"
+          {
+            "name": "源氏前公園入り口",
+            "address": "中延6-4",
+            "bags": 300,
+            "bags_as_of": "令和7年11月13日"
+          },
+          {
+            "name": "中延六丁目広場",
+            "address": "中延6-5",
+            "bags": 130,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "中延六丁目広場",
+          "address": "中延6-5",
+          "bags": 130,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 33
         }
       }
@@ -913,13 +971,23 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "源氏前小学校",
+          "address": "中延6-2-18",
+          "type": "区民避難所",
           "distance_m": 263
         },
         "sandbags_in_town": [
-          "東急大井町線ガード下"
+          {
+            "name": "東急大井町線ガード下",
+            "address": "中延4-19",
+            "bags": 300,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "東急大井町線ガード下",
+          "address": "中延4-19",
+          "bags": 300,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 112
         }
       }
@@ -1141,15 +1209,24 @@
       },
       "facilities": {
         "shelters_in_town": [
-          "豊葉の杜学園"
+          {
+            "name": "豊葉の杜学園",
+            "address": "二葉1-3-40",
+            "type": "区民避難所、自主避難施設"
+          }
         ],
         "nearest_shelter": {
           "name": "豊葉の杜学園",
+          "address": "二葉1-3-40",
+          "type": "区民避難所、自主避難施設",
           "distance_m": 148
         },
         "sandbags_in_town": [],
         "nearest_sandbag": {
           "name": "西大井広場内",
+          "address": "二葉2-19",
+          "bags": 500,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 559
         }
       }
@@ -1320,13 +1397,23 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "上神明小学校",
+          "address": "二葉4-4-10",
+          "type": "区民避難所",
           "distance_m": 375
         },
         "sandbags_in_town": [
-          "二葉中央のんき通り広場"
+          {
+            "name": "二葉中央のんき通り広場",
+            "address": "二葉3-17",
+            "bags": 200,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "二葉中央のんき通り広場",
+          "address": "二葉3-17",
+          "bags": 200,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 175
         }
       }
@@ -1496,13 +1583,23 @@
         "shelters_in_town": [],
         "nearest_shelter": {
           "name": "豊葉の杜学園",
+          "address": "二葉1-3-40",
+          "type": "区民避難所、自主避難施設",
           "distance_m": 340
         },
         "sandbags_in_town": [
-          "西大井広場内"
+          {
+            "name": "西大井広場内",
+            "address": "二葉2-19",
+            "bags": 500,
+            "bags_as_of": "令和7年11月13日"
+          }
         ],
         "nearest_sandbag": {
           "name": "西大井広場内",
+          "address": "二葉2-19",
+          "bags": 500,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 232
         }
       }
@@ -1697,15 +1794,24 @@
       },
       "facilities": {
         "shelters_in_town": [
-          "上神明小学校"
+          {
+            "name": "上神明小学校",
+            "address": "二葉4-4-10",
+            "type": "区民避難所"
+          }
         ],
         "nearest_shelter": {
           "name": "上神明小学校",
+          "address": "二葉4-4-10",
+          "type": "区民避難所",
           "distance_m": 136
         },
         "sandbags_in_town": [],
         "nearest_sandbag": {
           "name": "源氏前公園入り口",
+          "address": "中延6-4",
+          "bags": 300,
+          "bags_as_of": "令和7年11月13日",
           "distance_m": 169
         }
       }

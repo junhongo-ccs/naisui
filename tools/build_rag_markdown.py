@@ -191,12 +191,20 @@ def chunk_special(facts: dict) -> str | None:
 def chunk_facilities(facts: dict) -> str:
     town = facts["town"]
     facilities = facts["facilities"]
-    shelters = "、".join(facilities["shelters_in_town"]) or "なし"
-    sandbags = "、".join(facilities["sandbags_in_town"]) or "なし"
+    shelters = "、".join(f"{s['name']}（{s['address']}、{s['type']}）" for s in facilities["shelters_in_town"]) or "なし"
+    sandbags = "、".join(f"{s['name']}（{s['address']}、{s['bags']}袋）" for s in facilities["sandbags_in_town"]) or "なし"
+    nearest_shelter = facilities["nearest_shelter"]
+    nearest_sandbag = facilities["nearest_sandbag"]
+    # 最寄りが町の外にあるときは、町内の一覧に住所が出ないので最寄りの行に書く。
+    shelter_names = {s["name"] for s in facilities["shelters_in_town"]}
+    sandbag_names = {s["name"] for s in facilities["sandbags_in_town"]}
+    shelter_where = "" if nearest_shelter["name"] in shelter_names else f"{nearest_shelter['address']}、"
+    sandbag_where = "" if nearest_sandbag["name"] in sandbag_names else f"{nearest_sandbag['address']}、{nearest_sandbag['bags']}袋、"
     return "\n".join([
         f"## {town}の避難所と土のう置場",
-        f"{town}の町内の避難所: {shelters}。最寄りの避難所は{facilities['nearest_shelter']['name']}（町の中心から約{facilities['nearest_shelter']['distance_m']}m）。",
-        f"{town}の町内の土のう置場: {sandbags}。最寄りの土のう置場は{facilities['nearest_sandbag']['name']}（町の中心から約{facilities['nearest_sandbag']['distance_m']}m）。",
+        f"{town}の町内の避難所: {shelters}。最寄りの避難所は{nearest_shelter['name']}（{shelter_where}町の中心から約{nearest_shelter['distance_m']}m）。",
+        f"{town}の町内の土のう置場: {sandbags}。最寄りの土のう置場は{nearest_sandbag['name']}（{sandbag_where}町の中心から約{nearest_sandbag['distance_m']}m）。",
+        f"土のう置場は、品川区が土のう（土嚢）を置いている場所。袋の数は区の公開情報（{nearest_sandbag['bags_as_of']}時点）。",
         "避難所の開設状況は、品川区の公式情報で確認する。",
     ])
 

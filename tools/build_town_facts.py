@@ -146,10 +146,29 @@ def points(path: Path, label_fields: list[str]) -> gpd.GeoDataFrame:
     return gdf
 
 
-def nearest(gdf: gpd.GeoDataFrame, geometry: object) -> dict[str, object]:
+# 施設の属性のうち、チャットで答える項目（元の列名 -> 出力のキー）。
+SHELTER_FIELDS = {"address": "address", "shelter_type": "type"}
+SANDBAG_FIELDS = {"address": "address", "quantity": "bags", "source_updated": "bags_as_of"}
+
+
+def facility(row: object, fields: dict[str, str]) -> dict[str, object]:
+    record: dict[str, object] = {"name": row["label"]}
+    for source, key in fields.items():
+        value = row.get(source)
+        if value is None or value == "":
+            continue
+        if source == "address":
+            value = str(value).removeprefix("東京都品川区")
+        elif source == "quantity":
+            value = int(value)
+        record[key] = value
+    return record
+
+
+def nearest(gdf: gpd.GeoDataFrame, geometry: object, fields: dict[str, str]) -> dict[str, object]:
     distances = gdf.distance(geometry)
     index = distances.idxmin()
-    return {"name": gdf.loc[index, "label"], "distance_m": round(float(distances[index]))}
+    return {**facility(gdf.loc[index], fields), "distance_m": round(float(distances[index]))}
 
 
 class Grid:
@@ -425,10 +444,10 @@ def town_facts(
     }
 
     facts["facilities"] = {
-        "shelters_in_town": shelters[shelters.within(town)]["label"].tolist(),
-        "nearest_shelter": nearest(shelters, town.representative_point()),
-        "sandbags_in_town": sandbags[sandbags.within(town)]["label"].tolist(),
-        "nearest_sandbag": nearest(sandbags, town.representative_point()),
+        "shelters_in_town": [facility(row, SHELTER_FIELDS) for _, row in shelters[shelters.within(town)].iterrows()],
+        "nearest_shelter": nearest(shelters, town.representative_point(), SHELTER_FIELDS),
+        "sandbags_in_town": [facility(row, SANDBAG_FIELDS) for _, row in sandbags[sandbags.within(town)].iterrows()],
+        "nearest_sandbag": nearest(sandbags, town.representative_point(), SANDBAG_FIELDS),
     }
     return facts
 
@@ -517,8 +536,10 @@ def to_markdown(all_facts: list[dict[str, object]], metadata: dict[str, object])
         fac = facts["facilities"]
         lines += [
             "",
-            f"- 避難所: 町内 {('、'.join(fac['shelters_in_town']) or 'なし')}／最寄り {fac['nearest_shelter']['name']}（{fac['nearest_shelter']['distance_m']}m）",
-            f"- 土のう置場: 町内 {('、'.join(fac['sandbags_in_town']) or 'なし')}／最寄り {fac['nearest_sandbag']['name']}（{fac['nearest_sandbag']['distance_m']}m）",
+            f"- 避難所: 町内 {('、'.join(s['name'] + '（' + s['address'] + '）' for s in fac['shelters_in_town']) or 'なし')}"
+            f"／最寄り {fac['nearest_shelter']['name']}（{fac['nearest_shelter']['distance_m']}m）",
+            f"- 土のう置場: 町内 {('、'.join(s['name'] + '（' + s['address'] + '、' + str(s['bags']) + '袋）' for s in fac['sandbags_in_town']) or 'なし')}"
+            f"／最寄り {fac['nearest_sandbag']['name']}（{fac['nearest_sandbag']['distance_m']}m）",
             "",
         ]
     return "\n".join(lines)
