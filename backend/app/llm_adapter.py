@@ -1,19 +1,37 @@
-"""Stand-in for the Dify LLM call.
+"""Dify LLM call, with the deterministic template as fallback.
 
-Dify itself is not wired up yet (docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md §5: 作らないもの).
-This module builds the same response contract
-(docs/02_仕様・要件/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §6) from a deterministic
-template so the frontend and API contract can be built/tested now. Swap this
-module's `generate` function for a real Dify call later; callers should not
-need to change.
+Builds the response contract
+(docs/02_仕様・要件/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §6) by calling the Dify
+chatflow (prompt: data/naisui_poc/04_llm_knowledge/dify_llm_prompt.md, knowledge:
+naisui-knowledge). The deterministic policy checks in main.py/policy.py run before
+this module and are never delegated to Dify. If Dify is not configured, times out,
+or returns something that breaks the contract, the template response is returned.
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import os
+import re
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 from .data import MODEL_INFO
+
+logger = logging.getLogger(__name__)
+
+# backend/.env（コミットしない）。起動方法に関係なく読み込む。既に設定済みの環境変数は上書きしない。
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
+KNOWLEDGE_NAME = "naisui-knowledge"
+STATUSES = {"caution", "insufficient_data", "emergency", "official_notice"}
+PROHIBITED_KEYS = ("route_instruction", "shelter_safety_guarantee", "ungrounded_depth_forecast")
 
 # 実績照合レビュー(docs/03_モデル検証/中延二葉_モデル実績照合レビュー.md 第2章)のtied-rank Spearman ρ。
 # UIでは実績を主張の根拠にせず、モデル推定が過去傾向とどれだけ整合するかの参考値として示す
@@ -28,6 +46,154 @@ SCENARIO_META = {
 
 
 def generate(
+    *,
+    message: str,
+    town_name: str,
+    scenario_id: str,
+    town_risk: dict[str, Any],
+    official_status: dict[str, Any],
+    run_metadata: dict[str, Any],
+) -> dict[str, Any]:
+    if os.environ.get("DIFY_API_KEY"):
+        try:
+            contract = _dify_contract(
+                message=message,
+                town_name=town_name,
+                scenario_id=scenario_id,
+                town_risk=town_risk,
+                official_status=official_status,
+            )
+            contract["sources"] = _sources(run_metadata, official_status, knowledge=True)
+            return contract
+        except Exception as exc:  # タイムアウト・通信エラー・契約違反はすべてテンプレートに戻す
+            logger.warning("Dify response rejected, falling back to template: %s", exc)
+    return _template(
+        town_name=town_name,
+        scenario_id=scenario_id,
+        town_risk=town_risk,
+        official_status=official_status,
+        run_metadata=run_metadata,
+    )
+
+
+def _dify_contract(
+    *,
+    message: str,
+    town_name: str,
+    scenario_id: str,
+    town_risk: dict[str, Any],
+    official_status: dict[str, Any],
+) -> dict[str, Any]:
+    base_url = os.environ.get("DIFY_BASE_URL", "https://api.dify.ai/v1").rstrip("/")
+    timeout = float(os.environ.get("DIFY_TIMEOUT_SECONDS", "30"))
+    body = {
+        # 開始ノードの入力変数（dify_llm_prompt.md「開始ノードの入力変数」）。
+        "inputs": {
+            "town_name": town_name,
+            "scenario_label": SCENARIO_META.get(scenario_id, {}).get("label", scenario_id),
+            "calibration_status": "pre_calibration_screening",
+            "risk_level": town_risk.get("risk_level", "不明"),
+            "area_ratio_pct": str(round(town_risk.get("area_over_threshold_ratio", 0.0) * 100, 2)),
+            "official_status": json.dumps(
+                {k: v for k, v in official_status.items() if k != "retrieved_at"}, ensure_ascii=False
+            ),
+        },
+        # 知識検索のクエリはsys.query。町丁目名を付けて、その町丁目のファイルが検索に掛かるようにする。
+        "query": f"{town_name}について: {message}",
+        "response_mode": "blocking",
+        "user": "naisui-poc-backend",
+    }
+    request = urllib.request.Request(
+        f"{base_url}/chat-messages",
+        data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {os.environ['DIFY_API_KEY']}",
+            "Content-Type": "application/json",
+            # api.dify.aiの前段のCloudflareは、urllib既定のUser-Agent（Python-urllib）を403（error 1010）で拒否する。
+            "User-Agent": "naisui-poc-backend/0.1",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            answer = json.loads(response.read().decode("utf-8"))["answer"]
+    except urllib.error.HTTPError as exc:
+        # Difyはエラーの理由を本文のJSONで返す（例: Workflow not published）。ログで原因を追えるよう残す。
+        # モデル側の失敗はPluginInvokeErrorの長いtracebackになり、理由（例: 429 RESOURCE_EXHAUSTED）は末尾にある。
+        detail = exc.read().decode("utf-8", "replace")
+        try:
+            detail = json.loads(detail).get("message", detail)
+        except ValueError:
+            pass
+        detail = detail if len(detail) <= 400 else "..." + detail[-400:]
+        raise ValueError(f"Dify HTTP {exc.code}: {detail}") from exc
+    return _validate(_parse_json(answer))
+
+
+def _parse_json(answer: str) -> dict[str, Any]:
+    # モデルが```json ... ```で囲んで返すことがあるため、最初の{から最後の}までを取り出す。
+    match = re.search(r"\{.*\}", answer, re.DOTALL)
+    if not match:
+        raise ValueError("no JSON object in Dify answer")
+    return json.loads(match.group(0))
+
+
+def _validate(raw: dict[str, Any]) -> dict[str, Any]:
+    """JSON契約で検証する。違反はValueErrorにし、呼び出し側でテンプレートに戻す。"""
+
+    def text(key: str) -> str:
+        value = raw.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{key} must be a non-empty string")
+        return value.strip()
+
+    def texts(key: str) -> list[str]:
+        value = raw.get(key)
+        if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+            raise ValueError(f"{key} must be a list of strings")
+        return [v.strip() for v in value if v.strip()]
+
+    status = text("status")
+    if status not in STATUSES:
+        raise ValueError(f"unknown status: {status}")
+    check = raw.get("prohibited_claim_check")
+    if not isinstance(check, dict) or any(check.get(k) is not False for k in PROHIBITED_KEYS):
+        raise ValueError(f"prohibited_claim_check failed: {check}")
+    facts = texts("facts")
+    if status == "caution" and not facts:
+        raise ValueError("caution response without facts")
+    return {
+        "headline": text("headline"),
+        "status": status,
+        "facts": facts,
+        "model_context": text("model_context"),
+        "safe_next_steps": texts("safe_next_steps"),
+        "prohibited_claim_check": {k: False for k in PROHIBITED_KEYS},
+    }
+
+
+def _sources(run_metadata: dict[str, Any], official_status: dict[str, Any], *, knowledge: bool) -> list[dict[str, str]]:
+    sources = [
+        {
+            "name": f"naisui PoC モデル (pysheds_surface_routing + PLATEAU土地利用 {MODEL_INFO['version']}, 校正前)",
+            "retrieved_at": run_metadata.get("generated_at", datetime.now(timezone.utc).isoformat()),
+        },
+        {
+            "name": official_status["source"],
+            "retrieved_at": official_status["retrieved_at"],
+        },
+    ]
+    if knowledge:
+        sources.append(
+            {
+                "name": f"Difyナレッジ {KNOWLEDGE_NAME}（RAG/：地域の背景・町丁目の事実・用語）",
+                "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+    return sources
+
+
+def _template(
     *,
     town_name: str,
     scenario_id: str,
@@ -59,19 +225,6 @@ def generate(
             "最新の公式な避難情報・気象警報を確認してください。",
             "不安な場合は品川区の公式情報を確認してください。",
         ],
-        "prohibited_claim_check": {
-            "route_instruction": False,
-            "shelter_safety_guarantee": False,
-            "ungrounded_depth_forecast": False,
-        },
-        "sources": [
-            {
-                "name": f"naisui PoC モデル (pysheds_surface_routing + PLATEAU土地利用 {MODEL_INFO['version']}, 校正前)",
-                "retrieved_at": run_metadata.get("generated_at", datetime.now(timezone.utc).isoformat()),
-            },
-            {
-                "name": official_status["source"],
-                "retrieved_at": official_status["retrieved_at"],
-            },
-        ],
+        "prohibited_claim_check": {k: False for k in PROHIBITED_KEYS},
+        "sources": _sources(run_metadata, official_status, knowledge=False),
     }

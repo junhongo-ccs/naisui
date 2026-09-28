@@ -119,6 +119,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     official_status = policy.official_status_stub(town_name)
     run_metadata = store.run_metadata.get(req.scenario_id, {})
     contract = llm_adapter.generate(
+        message=req.message,
         town_name=town_name,
         scenario_id=req.scenario_id,
         town_risk=town_risk,
