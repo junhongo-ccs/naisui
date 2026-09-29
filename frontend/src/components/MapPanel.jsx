@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Map as MapLibreMap, NavigationControl, Popup } from "maplibre-gl";
+import { Map as MapLibreMap, NavigationControl, Popup, setWorkerUrl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// MapLibreはworkerのURLを実行時の文字列で組み立てるため、本番ビルドにworkerが出力されず、
+// GeoJSONの層（町丁目・浸水想定・記号）が描かれなくなる（開発サーバーでは動くので気づきにくい）。
+// Viteにworkerを1つのファイルとしてビルドさせ、その場所をMapLibreに渡す（vite.config.js の worker.format と対）。
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { backendUrl } from "../lib/api";
+
+setWorkerUrl(maplibreWorkerUrl);
 
 async function fetchJson(url) {
-  const res = await fetch(url);
+  const res = await fetch(backendUrl(url));
   if (!res.ok) {
     throw new Error(`${url} -> HTTP ${res.status}`);
   }
@@ -344,7 +351,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
       if (pondingBounds.status === "fulfilled") {
         map.addSource("ponding", {
           type: "image",
-          url: layers.ponding_overlay_png,
+          url: backendUrl(layers.ponding_overlay_png),
           coordinates: pondingBounds.value.coordinates,
         });
         map.addLayer({
@@ -444,7 +451,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
       .then((bounds) => {
         if (cancelled) return;
         source.updateImage({
-          url: scenarioDetail.map_layers.ponding_overlay_png,
+          url: backendUrl(scenarioDetail.map_layers.ponding_overlay_png),
           coordinates: bounds.coordinates,
         });
       })

@@ -20,6 +20,11 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["maplibre-gl"],
   },
+  // MapLibreのworkerはESモジュール（中で maplibre-gl-shared.mjs を import する）なので、ESの形でまとめる。
+  // MapPanel.jsx の setWorkerUrl と対。
+  worker: {
+    format: "es",
+  },
   server: {
     proxy: {
       "/api": "http://127.0.0.1:8000",

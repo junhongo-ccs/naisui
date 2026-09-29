@@ -1,0 +1,32 @@
+# Renderのバックエンド（FastAPI）の設定。Renderの「New → Blueprint」でこのリポジトリを選ぶと、この内容でサービスが作られる。
+# バックエンドは data/naisui_poc/ のファイルを読むので、ルートディレクトリはリポジトリ直下のままにする（backend/ にしない）。
+services:
+  - type: web
+    name: naisui-api
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    # バックエンドとデータの変更だけで再デプロイする（画面やドキュメントの変更では動かさない）
+    buildFilter:
+      paths:
+        - backend/**
+        - data/naisui_poc/01_raw/shelter/**
+        - data/naisui_poc/02_processed/web_map/**
+        - data/naisui_poc/02_processed/pysheds_surface_routing_roads/**
+        - render.yaml
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.10"
+      - key: DIFY_BASE_URL
+        value: https://api.dify.ai/v1
+      - key: DIFY_TIMEOUT_SECONDS
+        value: "30"
+      # 以下は画面で入力する（リポジトリには書かない）
+      - key: DIFY_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false

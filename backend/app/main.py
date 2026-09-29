@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,10 +17,14 @@ mimetypes.add_type("application/geo+json", ".geojson")
 
 app = FastAPI(title="naisui PoC API")
 
-# ローカル開発のVite既定ポート。デプロイ時はRender側の環境変数で許可オリジンを絞る。
+# 画面からのアクセスを許すオリジン。ローカル開発のVite既定ポートに加え、
+# 本番の画面（VercelのURL）は環境変数 ALLOWED_ORIGINS にカンマ区切りで渡す（Renderの環境変数で設定）。
+ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"] + [
+    origin.strip().rstrip("/") for origin in os.environ.get("ALLOWED_ORIGINS", "").split(",") if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
