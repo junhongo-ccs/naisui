@@ -8,10 +8,27 @@ bypassed by user input, RAG content, or the LLM adapter.
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from datetime import datetime, timezone
 from typing import Any
 
 from .data import COVERAGE_LABEL, TOWN_CHOICES
+
+# 質問の長さの上限（画面の入力欄と合わせる）。長文の貼り付けや指示の注入を抑える。
+MAX_MESSAGE_LENGTH = 200
+
+# このマップが答えない質問（2026-09-29、要件定義 8章の決定）。Difyを呼ぶ前に決まった答えを返す。
+# 判断を求める質問: 避難の要否、経路、通行、安全の保証。
+_JUDGMENT = re.compile(
+    r"避難(?:す|し)(?:べき|たほう|た方|なきゃ|ないと)|逃げ(?:るべき|たほう|た方|なきゃ|ないと)|どこ[にへ]逃げ"
+    r"|避難経路|通れ|通行でき|安全(?:です|か|な場所|な道|[?？])|大丈夫"
+)
+# 今の状況・予報を聞く質問。「今まで」「今回」は過去や一般の話、「今のうちに」「明日から」は備えの話なので含めない。
+_REALTIME = re.compile(
+    r"今[、,は]|今の(?!うち)|いま[、は]|いまの(?!うち)|現在|リアルタイム|予報|今日|今夜|明日(?!から)|あした(?!から)"
+    r"|開いて|空いて|開設|警報|注意報|避難指示|避難情報|降って|雨雲"
+)
 
 # 簡易キーワードマッチ。精緻化は別タスク（docs/02_仕様・要件/中延二葉_チャットUI_要件定義.md 未確定の前提）。
 EMERGENCY_KEYWORDS = [
@@ -30,6 +47,62 @@ EMERGENCY_KEYWORDS = [
 
 def detect_emergency(message: str) -> bool:
     return any(keyword in message for keyword in EMERGENCY_KEYWORDS)
+
+
+def detect_out_of_scope(message: str) -> str | None:
+    """判断を求める質問なら "judgment"、今の状況・予報を聞く質問なら "realtime" を返す。"""
+    text = unicodedata.normalize("NFKC", message)
+    if _JUDGMENT.search(text):
+        return "judgment"
+    if _REALTIME.search(text):
+        return "realtime"
+    return None
+
+
+def _no_claims() -> dict[str, bool]:
+    return {"route_instruction": False, "shelter_safety_guarantee": False, "ungrounded_depth_forecast": False}
+
+
+def out_of_scope_response(kind: str, town_name: str | None) -> dict[str, Any]:
+    """このマップが答えない質問への決まった答え。公式情報へ案内し、町丁目が分かれば事実を聞けることを示す。"""
+    if kind == "judgment":
+        headline = "避難や安全の判断は、このチャットではできません"
+        context = "このマップの試算は校正前で、避難の判断、避難所の安全、道路の通行可否を評価していません。"
+        steps = ["避難するかどうかは、品川区の避難情報と気象庁の情報をもとに判断してください。"]
+    else:
+        headline = "このマップでは、今の状況や予報は分かりません"
+        context = (
+            "このマップは、想定最大規模の大雨のときに雨水がたまりやすい場所を、平時に確かめるためのものです。"
+            "今の雨の状況、浸水の予報、避難所の開設状況、道路の通行可否は扱っていません。"
+        )
+        steps = [
+            "今の避難情報と避難所の開設状況は、品川区の防災情報で確認してください。",
+            "大雨による浸水の危険度は、気象庁の「キキクル（危険度分布）」で確認できます。",
+        ]
+    steps.append("命に関わる危険がある場合は119番または110番に通報してください。")
+    if town_name:
+        steps.append(f"{town_name}の地形やたまりやすい場所など、備えに役立つ事実は下の質問例から聞けます。")
+    return {
+        "headline": headline,
+        "status": "insufficient_data",
+        "facts": [],
+        "model_context": context,
+        "safe_next_steps": steps,
+        "prohibited_claim_check": _no_claims(),
+        "sources": [],
+    }
+
+
+def too_long_response() -> dict[str, Any]:
+    return {
+        "headline": f"質問は{MAX_MESSAGE_LENGTH}字以内で入力してください",
+        "status": "insufficient_data",
+        "facts": [],
+        "model_context": "長い文章は受け付けていません。聞きたいことを短くまとめて、もう一度送ってください。",
+        "safe_next_steps": [],
+        "prohibited_claim_check": _no_claims(),
+        "sources": [],
+    }
 
 
 def official_status_stub(town_name: str | None) -> dict[str, Any]:

@@ -89,6 +89,19 @@ def chat(req: ChatRequest) -> ChatResponse:
         contract = policy.emergency_response()
         return _to_chat_response(contract, contract["headline"])
 
+    if len(req.message) > policy.MAX_MESSAGE_LENGTH:
+        contract = policy.too_long_response()
+        return _to_chat_response(contract, contract["headline"])
+
+    # 今の状況・予報、避難や安全の判断は、このマップが答えない質問。Difyに任せず決まった答えを返す。
+    # 町丁目が分かれば返して、画面の選択状態と質問例（事実を聞く道）を残す。
+    out_of_scope = policy.detect_out_of_scope(req.message)
+    if out_of_scope:
+        in_area = [name for name in data.towns_mentioned(req.message) if not name.startswith("対象外:")]
+        town_name = in_area[0] if len(in_area) == 1 else data.SLUG_TO_TOWN.get(req.town_slug or "")
+        contract = policy.out_of_scope_response(out_of_scope, town_name)
+        return _to_chat_response(contract, contract["headline"], data.TOWN_SLUGS.get(town_name or ""))
+
     # メッセージに町丁目名があればそれを優先し、無ければボタン・地図で選んだ町丁目を使う。
     # 複数の町丁目・対象外の丁目、町丁目として読めない場所（「下神明あたり」等）が書かれている場合は、
     # 選択中の町丁目で答えず、推測せず確認を求める。
