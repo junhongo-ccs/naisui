@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 function SystemNotice({ text }) {
   return (
@@ -6,34 +6,6 @@ function SystemNotice({ text }) {
       <div className="flex-1 h-px bg-gray-200" />
       <span>{text}</span>
       <div className="flex-1 h-px bg-gray-200" />
-    </div>
-  );
-}
-
-function EvidenceDetails({ message }) {
-  const [open, setOpen] = useState(false);
-  if (!message.facts?.length && !message.sources?.length) return null;
-  return (
-    <div className="mt-2">
-      <button
-        type="button"
-        className="text-xs text-brand-700 underline"
-        onClick={() => setOpen((v) => !v)}
-      >
-        {open ? "根拠・計算条件を閉じる" : "根拠・計算条件を見る"}
-      </button>
-      {open && (
-        <div className="mt-1 text-xs text-gray-500 bg-gray-50 rounded-md p-2 space-y-1">
-          {message.facts?.map((f, i) => (
-            <div key={i}>・{f}</div>
-          ))}
-          {message.sources?.map((s, i) => (
-            <div key={i} className="text-gray-400">
-              出典: {s.name}（{new Date(s.retrieved_at).toLocaleString("ja-JP")}）
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -51,7 +23,7 @@ function TownChoices({ choices, onSelectTown }) {
           key={town.slug}
           type="button"
           onClick={() => onSelectTown(town)}
-          className="rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-sm text-brand-800 hover:bg-brand-100"
+          className="rounded-full border border-brand-700 bg-white px-3 py-1 text-sm font-bold text-brand-700 hover:bg-brand-50"
         >
           {town.name}
         </button>
@@ -60,7 +32,42 @@ function TownChoices({ choices, onSelectTown }) {
   );
 }
 
-function Bubble({ message, currentScenarioId, onSelectTown }) {
+// 回答のあとに示す質問例。RAGの町丁目ファイル（tools/build_rag_markdown.py）は10町丁目とも
+// 同じ章立て（地形・たまりやすい場所・公式の浸水想定・過去の浸水・避難所と土のう置場）なので、
+// どの町丁目でも答えのある質問を固定で出せる。
+const FOLLOW_UP_QUESTIONS = [
+  { label: "水がたまりやすい場所", text: (town) => `${town}で水がたまりやすいのはどこ？` },
+  { label: "土地の高さ・地形", text: (town) => `${town}の土地の高さや地形は？` },
+  { label: "過去の浸水", text: (town) => `${town}は過去にどれくらい浸水した？` },
+  { label: "公式の想定と試算の違い", text: (town) => `${town}の公式の浸水想定と試算はどう違う？` },
+  { label: "避難所・土のう置場", text: (town) => `${town}の近くの避難所と土のう置場は？` },
+];
+
+// 押すと入力欄に反映する（自動送信はしない）。直前に聞いた質問は出さない。
+function FollowUpQuestions({ townName, askedText, onPick }) {
+  const questions = FOLLOW_UP_QUESTIONS.map((q) => ({ label: q.label, text: q.text(townName) })).filter(
+    (q) => q.text !== askedText,
+  );
+  return (
+    <div className="mt-3 pt-2 border-t border-gray-100">
+      <div className="text-xs text-gray-500 mb-1.5">{townName}について、ほかに聞けること</div>
+      <div className="flex flex-wrap gap-1.5">
+        {questions.map((q) => (
+          <button
+            key={q.label}
+            type="button"
+            onClick={() => onPick(q.text)}
+            className="rounded-full border border-brand-700 bg-white px-3 py-1 text-sm font-bold text-brand-700 hover:bg-brand-50"
+          >
+            {q.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Bubble({ message, currentScenarioId, onSelectTown, followUp }) {
   if (message.role === "system") return <SystemNotice text={message.text} />;
   const isUser = message.role === "user";
   const stale = !isUser && message.scenarioLabel && message.scenarioId !== currentScenarioId;
@@ -69,7 +76,7 @@ function Bubble({ message, currentScenarioId, onSelectTown }) {
       <div
         className={
           "max-w-[85%] rounded-2xl px-4 py-2 text-base whitespace-pre-wrap " +
-          (isUser ? "bg-brand-600 text-white" : "bg-white border border-gray-200 text-gray-900")
+          (isUser ? "bg-brand-700 text-white" : "bg-white border border-gray-200 text-gray-900")
         }
       >
         {stale && (
@@ -77,7 +84,7 @@ function Bubble({ message, currentScenarioId, onSelectTown }) {
         )}
         {message.text}
         {!isUser && <TownChoices choices={message.townChoices} onSelectTown={onSelectTown} />}
-        {!isUser && <EvidenceDetails message={message} />}
+        {followUp}
       </div>
     </div>
   );
@@ -94,10 +101,19 @@ export default function ChatPanel({
   onSelectTown,
 }) {
   const listRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages, loading]);
+
+  // 質問例は、町丁目を特定できた最新の回答にだけ出す（緊急時の案内には出さない）。
+  const last = messages.at(-1);
+  const showFollowUp = !loading && last?.role === "assistant" && last.townName && last.status !== "emergency";
+  const pickFollowUp = (text) => {
+    onInputChange(text);
+    inputRef.current?.focus();
+  };
 
   const send = () => {
     const text = input.trim();
@@ -110,12 +126,22 @@ export default function ChatPanel({
       <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3">
         {messages.length === 0 && (
           <div className="text-sm text-gray-400 text-center mt-8 space-y-1">
-            <div>町丁目を選んで、状況を質問してください。</div>
+            <div>町丁目を選んで、大雨への備えに役立つことを聞いてください。</div>
             <div className="text-xs">{COVERAGE_NOTE}</div>
           </div>
         )}
-        {messages.map((m) => (
-          <Bubble key={m.id} message={m} currentScenarioId={currentScenarioId} onSelectTown={onSelectTown} />
+        {messages.map((m, i) => (
+          <Bubble
+            key={m.id}
+            message={m}
+            currentScenarioId={currentScenarioId}
+            onSelectTown={onSelectTown}
+            followUp={
+              showFollowUp && m === last ? (
+                <FollowUpQuestions townName={m.townName} askedText={messages[i - 1]?.text} onPick={pickFollowUp} />
+              ) : null
+            }
+          />
         ))}
         {loading && (
           <div className="flex justify-start">
@@ -141,6 +167,7 @@ export default function ChatPanel({
       </div>
       <div className="border-t border-gray-200 p-3 flex gap-2 bg-white">
         <input
+          ref={inputRef}
           className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-400"
           placeholder="町丁目名を入力するか、ボタンで選択してください"
           value={input}
@@ -148,11 +175,12 @@ export default function ChatPanel({
           onKeyDown={(e) => e.key === "Enter" && send()}
           disabled={loading}
         />
+        {/* 送信ボタンは緑みの濃い灰色（白文字とのコントラスト比 約9:1） */}
         <button
           type="button"
           onClick={send}
           disabled={loading || !input.trim()}
-          className="rounded-full bg-brand-600 text-white px-5 py-2 text-base disabled:opacity-40"
+          className="rounded-full bg-[#3f4b44] text-white px-5 py-2 text-base disabled:opacity-40"
         >
           送信
         </button>

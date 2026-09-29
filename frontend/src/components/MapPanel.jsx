@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Map as MapLibreMap, NavigationControl } from "maplibre-gl";
+import { Map as MapLibreMap, NavigationControl, Popup } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 async function fetchJson(url) {
@@ -15,6 +15,82 @@ async function fetchJson(url) {
     throw new Error(`${url} -> HTMLが返ってきました（バックエンドが起動していない可能性）`);
   }
   return res.json();
+}
+
+// 地図記号のSVG（24×24で作図）。絵柄は同じファイル名で差し替える。
+const MAP_ICONS = {
+  "shelter-icon": `${import.meta.env.BASE_URL}map-icons/shelter.svg`,
+  "sandbag-icon": `${import.meta.env.BASE_URL}map-icons/sandbag.svg`,
+};
+const MAP_ICON_SIZE = 24;
+const MAP_ICON_PIXEL_RATIO = 2; // 48×48で描き出し、高解像度の画面でもぼけないようにする
+// ズーム15で24px。引くと重ならないよう小さく、町丁目に寄ると大きくする。
+const MAP_ICON_SIZE_EXPR = ["interpolate", ["linear"], ["zoom"], 13, 0.7, 15, 1, 17, 1.3];
+
+// SVGはmap.loadImageでは読めないため、canvasでビットマップにしてからaddImageする。
+// Illustratorの書き出しはviewBoxだけでwidth/heightがなく、Firefoxではcanvasに描けないので、
+// ルート要素に寸法を付けてから読み込む。
+async function addSvgImage(map, id, url) {
+  const px = MAP_ICON_SIZE * MAP_ICON_PIXEL_RATIO;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
+  const doc = new DOMParser().parseFromString(await res.text(), "image/svg+xml");
+  doc.documentElement.setAttribute("width", px);
+  doc.documentElement.setAttribute("height", px);
+  const blobUrl = URL.createObjectURL(
+    new Blob([new XMLSerializer().serializeToString(doc)], { type: "image/svg+xml" }),
+  );
+  const img = new Image(px, px);
+  img.src = blobUrl;
+  try {
+    await img.decode();
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = px;
+  canvas.height = px;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, px, px);
+  map.addImage(id, ctx.getImageData(0, 0, px, px), { pixelRatio: MAP_ICON_PIXEL_RATIO });
+}
+
+// 記号を押したときの吹き出しの中身（レイヤーID → 表示する項目）。言い方はRAGの町丁目ファイルとそろえる。
+// 避難所は開設状況・安全を示さず、公式情報で確認するよう添える。
+const FACILITY_POPUPS = {
+  "sandbag-points": (p) => ({
+    kind: "土のう置場",
+    name: p.landmark,
+    details: [p.address, `${p.quantity}袋`],
+    note: `袋の数は区の公開情報（${p.source_updated}時点）`,
+  }),
+  "shelter-points": (p) => ({
+    kind: p.shelter_type ?? "避難所",
+    name: p.name,
+    details: [p.address],
+    note: "開設状況は品川区の公式情報で確認してください",
+  }),
+};
+
+function facilityPopupContent({ kind, name, details, note }) {
+  const root = document.createElement("div");
+  root.className = "text-xs text-gray-800 space-y-0.5 pr-3";
+  const line = (text, className = "") => {
+    const el = document.createElement("div");
+    el.textContent = text;
+    el.className = className;
+    root.append(el);
+  };
+  line(kind, "text-gray-500");
+  line(name, "text-sm font-semibold");
+  details.forEach((d) => line(d));
+  line(note, "text-gray-500 pt-1");
+  return root;
+}
+
+function facilityLayersAt(map, point) {
+  const layers = Object.keys(FACILITY_POPUPS).filter((id) => map.getLayer(id));
+  return layers.length ? map.queryRenderedFeatures(point, { layers }) : [];
 }
 
 const BASE_STYLE = {
@@ -173,6 +249,12 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
       style: BASE_STYLE,
       bounds: TARGET_BOUNDS,
       fitBoundsOptions: { padding: 40 },
+      // 地図のボタンにマウスを乗せたときの説明を日本語にする。
+      locale: {
+        "NavigationControl.ZoomIn": "拡大",
+        "NavigationControl.ZoomOut": "縮小",
+        "NavigationControl.ResetBearing": "北を上に戻す",
+      },
     });
     mapRef.current = map;
     map.addControl(new NavigationControl(), "top-right");
@@ -194,6 +276,9 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
       // (以前はfetch.then内でaddLayerしており、addLayerの発生順がネットワーク応答順に
       //  左右され、重なり順が非決定になっていた — 2026-09-15 naisui-f4指摘)
       const layerKeys = ["hazard", "towns", "ponding", "sandbag", "shelter"];
+      const iconsLoaded = Promise.allSettled(
+        Object.entries(MAP_ICONS).map(([id, url]) => addSvgImage(map, id, url)),
+      );
       const results = await Promise.allSettled([
         fetchJson(layers.hazard_pdf_derived),
         fetchJson(layers.town_boundaries),
@@ -202,6 +287,12 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
         fetchJson(layers.shelter_locations),
       ]);
       const [hazard, towns, pondingBounds, sandbag, shelter] = results;
+      (await iconsLoaded).forEach((result, i) => {
+        if (result.status === "rejected") {
+          // eslint-disable-next-line no-console
+          console.error(`[MapPanel] 地図記号 ${Object.values(MAP_ICONS)[i]} の読み込みに失敗:`, result.reason);
+        }
+      });
 
       // 失敗したものを記録しつつ、成功したものだけ固定順（下から上へ）で追加する。
       const failed = [];
@@ -237,6 +328,8 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
           filter: ["==", ["get", "town_name"], "__none__"],
         });
         map.on("click", "towns-fill", (e) => {
+          // 土のう置場・避難所の記号を押したときは吹き出しだけ出し、町丁目の選択（ズーム）はしない。
+          if (facilityLayersAt(map, e.point).length) return;
           const name = e.features[0]?.properties?.town_name;
           if (name) onTownClick(name);
         });
@@ -245,42 +338,6 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
         });
         map.on("mouseleave", "towns-fill", () => {
           map.getCanvas().style.cursor = "";
-        });
-      }
-
-      if (sandbag.status === "fulfilled") {
-        map.addSource("sandbag", { type: "geojson", data: sandbag.value });
-        map.addLayer({
-          id: "sandbag-points",
-          type: "circle",
-          source: "sandbag",
-          paint: {
-            "circle-radius": 7,
-            "circle-color": "#d97706",
-            "circle-stroke-width": 1.5,
-            "circle-stroke-color": "#ffffff",
-          },
-        });
-      }
-
-      if (shelter.status === "fulfilled") {
-        map.addSource("shelter", { type: "geojson", data: shelter.value });
-        // circleレイヤーは丸しか描けないため、■記号のsymbolレイヤーで四角として表示する。
-        map.addLayer({
-          id: "shelter-points",
-          type: "symbol",
-          source: "shelter",
-          layout: {
-            "text-field": "■",
-            "text-size": 20,
-            "text-allow-overlap": true,
-            "text-ignore-placement": true,
-          },
-          paint: {
-            "text-color": "#16a34a",
-            "text-halo-color": "#ffffff",
-            "text-halo-width": 1.5,
-          },
         });
       }
 
@@ -305,6 +362,59 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
           type: "fill",
           source: "hazard",
           paint: { "fill-color": HAZARD_FILL_COLOR_EXPR, "fill-opacity": HAZARD_FILL_OPACITY },
+        });
+      }
+
+      // 記号は塗りや湛水の層に埋もれないよう、最後に（いちばん上に）追加する。
+      if (sandbag.status === "fulfilled") {
+        map.addSource("sandbag", { type: "geojson", data: sandbag.value });
+        map.addLayer({
+          id: "sandbag-points",
+          type: "symbol",
+          source: "sandbag",
+          layout: {
+            "icon-image": "sandbag-icon",
+            "icon-size": MAP_ICON_SIZE_EXPR,
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+          },
+        });
+      }
+
+      if (shelter.status === "fulfilled") {
+        map.addSource("shelter", { type: "geojson", data: shelter.value });
+        map.addLayer({
+          id: "shelter-points",
+          type: "symbol",
+          source: "shelter",
+          layout: {
+            "icon-image": "shelter-icon",
+            "icon-size": MAP_ICON_SIZE_EXPR,
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+          },
+        });
+      }
+
+      // 吹き出しは1つだけ開く（別の記号を押すと差し替わる）。
+      // z-10: 地図の上に重ねた凡例や注記より手前に出す（凡例のそばの記号で吹き出しが潜らないように）。
+      const facilityPopup = new Popup({ offset: 14, maxWidth: "240px", className: "z-10" });
+      for (const [layerId, toContent] of Object.entries(FACILITY_POPUPS)) {
+        if (!map.getLayer(layerId)) continue;
+        map.on("click", layerId, (e) => {
+          const feature = e.features[0];
+          facilityPopup
+            .setLngLat(feature.geometry.coordinates)
+            .setDOMContent(facilityPopupContent(toContent(feature.properties)))
+            .addTo(map);
+        });
+        map.on("mouseenter", layerId, () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        // 記号から離れても町丁目の上なら、町丁目を押せることを示すカーソルのままにする。
+        map.on("mouseleave", layerId, (e) => {
+          const overTown = map.getLayer("towns-fill") && map.queryRenderedFeatures(e.point, { layers: ["towns-fill"] }).length;
+          map.getCanvas().style.cursor = overTown ? "pointer" : "";
         });
       }
 

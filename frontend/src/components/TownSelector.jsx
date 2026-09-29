@@ -19,10 +19,8 @@ export default function TownSelector({ towns, selectedSlug, onSelect }) {
               type="button"
               onClick={() => onSelect(t)}
               className={
-                "text-sm rounded-full px-3 py-1 border transition-colors " +
-                (active
-                  ? "bg-brand-600 text-white border-brand-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-brand-400")
+                "text-sm font-bold rounded-full px-3 py-1 border border-brand-700 transition-colors " +
+                (active ? "bg-brand-700 text-white" : "bg-white text-brand-700 hover:bg-brand-50")
               }
             >
               {t.name}

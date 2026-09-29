@@ -2,7 +2,7 @@ import { useState } from "react";
 import ChatPanel from "./ChatPanel";
 
 const conversation = [
-  { id: "1", role: "user", text: "二葉三丁目の状況は？" },
+  { id: "1", role: "user", text: "二葉三丁目について教えて" },
   {
     id: "2",
     role: "assistant",
@@ -19,6 +19,8 @@ const conversation = [
     sources: [{ name: "naisui PoC モデル (pysheds_surface_routing, 校正前)", retrieved_at: "2026-09-15T07:49:55Z" }],
     scenarioId: "sc_100mm_extreme",
     scenarioLabel: "100mm/h (極端降雨)",
+    townName: "二葉三丁目",
+    status: "caution",
   },
 ];
 

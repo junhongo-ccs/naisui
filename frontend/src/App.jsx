@@ -22,6 +22,29 @@ function useIsPC() {
   return isPC;
 }
 
+// ノートPCではブラウザのタブやアドレスバーの分だけ地図とチャットが狭くなるため、
+// ページ全体（地図＋チャット）を全画面にするボタンを出す（F11と同じ）。Escでも戻れる。
+// 全画面にできないブラウザ（iPhoneのSafariなど）では出さない。
+function FullscreenButton() {
+  const [isFull, setIsFull] = useState(() => Boolean(document.fullscreenElement));
+  useEffect(() => {
+    const onChange = () => setIsFull(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  if (!document.fullscreenEnabled) return null;
+  const toggle = () => (isFull ? document.exitFullscreen() : document.documentElement.requestFullscreen());
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="text-xs text-white border border-white/70 rounded px-2 py-0.5 whitespace-nowrap hover:bg-white/10"
+    >
+      {isFull ? "全画面を終了" : "全画面で表示"}
+    </button>
+  );
+}
+
 let msgSeq = 0;
 const nextId = () => `m${++msgSeq}`;
 
@@ -54,7 +77,7 @@ export default function App() {
 
   const handleTownSelect = (town) => {
     setSelectedTown(town);
-    setInput(`${town.name}の状況は？`);
+    setInput(`${town.name}について教えて`);
   };
 
   const handleMapTownClick = (townName) => {
@@ -87,6 +110,8 @@ export default function App() {
           facts: res.facts,
           sources: res.sources,
           townChoices: res.town_choices,
+          townName: towns.find((t) => t.slug === res.town_slug)?.name ?? null,
+          status: res.status,
           scenarioId,
           scenarioLabel: OFFICIAL_SCENARIO_LABEL,
         },
@@ -100,16 +125,20 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-surface text-gray-900">
-      <header className="flex items-center justify-between gap-4 px-4 py-2 border-b border-gray-200 bg-white">
+      {/* 避難所の記号（brand-600）より一段濃い緑。白文字とのコントラスト比 約5.0:1 */}
+      <header className="flex items-center justify-between gap-4 px-4 py-2 bg-brand-700 text-white">
         <div className="font-medium text-sm whitespace-nowrap">中延・二葉 雨水のたまりやすさマップ</div>
-        <a
-          href="https://www.city.shinagawa.tokyo.jp/PC/bosai/bosai2/index.html"
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs text-brand-700 underline whitespace-nowrap"
-        >
-          品川区の公式情報を確認
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href="https://www.city.shinagawa.tokyo.jp/PC/bosai/bosai2/index.html"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-white underline whitespace-nowrap hover:text-brand-100"
+          >
+            品川区の公式情報を確認
+          </a>
+          <FullscreenButton />
+        </div>
       </header>
 
       {isPC ? (
