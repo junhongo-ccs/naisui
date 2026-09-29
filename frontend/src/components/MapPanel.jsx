@@ -67,28 +67,32 @@ async function addSvgImage(map, id, url) {
 const FACILITY_POPUPS = {
   "sandbag-points": (p) => ({
     kind: "土のう置場",
+    // 土のうの記号（#d97706 = amber-600）と同じ系統の色。600だと白地でコントラスト比が約3.2:1しかないので700にする。
+    kindClassName: "font-bold text-amber-700",
     name: p.landmark,
     details: [p.address, `${p.quantity}袋`],
     note: `袋の数は区の公開情報（${p.source_updated}時点）`,
   }),
   "shelter-points": (p) => ({
     kind: p.shelter_type ?? "避難所",
+    // 避難所の記号（#16a34a = brand-600）と同じ系統の色。土のう置場と同じ理由で700にする。
+    kindClassName: "font-bold text-brand-700",
     name: p.name,
     details: [p.address],
     note: "開設状況は品川区の公式情報で確認してください",
   }),
 };
 
-function facilityPopupContent({ kind, name, details, note }) {
+function facilityPopupContent({ kind, kindClassName = "text-gray-500", name, details, note }) {
   const root = document.createElement("div");
-  root.className = "text-xs text-gray-800 space-y-0.5 pr-3";
+  root.className = "text-xs text-gray-800 space-y-0.5";
   const line = (text, className = "") => {
     const el = document.createElement("div");
     el.textContent = text;
     el.className = className;
     root.append(el);
   };
-  line(kind, "text-gray-500");
+  line(kind, kindClassName);
   line(name, "text-sm font-semibold");
   details.forEach((d) => line(d));
   line(note, "text-gray-500 pt-1");
@@ -405,7 +409,8 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
 
       // 吹き出しは1つだけ開く（別の記号を押すと差し替わる）。
       // z-10: 地図の上に重ねた凡例や注記より手前に出す（凡例のそばの記号で吹き出しが潜らないように）。
-      const facilityPopup = new Popup({ offset: 14, maxWidth: "240px", className: "z-10" });
+      // 閉じるボタン（小さい×）は出さない。地図のほかの場所を押せば閉じる（closeOnClickの既定）。
+      const facilityPopup = new Popup({ offset: 14, maxWidth: "240px", className: "z-10", closeButton: false });
       for (const [layerId, toContent] of Object.entries(FACILITY_POPUPS)) {
         if (!map.getLayer(layerId)) continue;
         map.on("click", layerId, (e) => {
