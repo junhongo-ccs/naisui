@@ -6,6 +6,15 @@
 
 **2026-09-24 CSV座標検証の引継ぎ**: `docs/00_現状・引継ぎ/中延二葉_2026-09-24_CSV座標検証_引継ぎ.md`。Tokyo Datum解釈で作成したCSV2全件GeoPackage、QGISプロジェクトの保存状態、PDFとの比較で言える範囲、PoC本体に戻る際の判断を記録した。
 
+## 2026-09-29 追記（2）: デプロイ
+
+- **画面**: https://naisui.vercel.app （Vercel、プロジェクト `naisui`、Root Directory `frontend`）。環境変数 `VITE_API_BASE=https://naisui-api.onrender.com` はビルド時に埋め込まれるので、RenderのURLが変わったらVercelで再デプロイする。
+- **バックエンド**: https://naisui-api.onrender.com （Render、Blueprint `naisui-shinagawa` → サービス `naisui-api`、無料プラン、シンガポール）。設定は `render.yaml`。リポジトリ直下から `backend/` を起動し、`data/naisui_poc/` を読む。環境変数 `DIFY_API_KEY`（画面で入力）、`ALLOWED_ORIGINS=https://naisui.vercel.app`。
+- masterへのプッシュで両方が自動デプロイされる（Renderは `render.yaml` の `buildFilter` に書いたバックエンドとデータの変更のときだけ）。
+- Renderの無料プランは15分ほどでスリープし、次の最初の表示に1分近くかかる。デモの前に一度開いて起こす。
+- 本番ビルドでMapLibreのworkerが出力されず、GeoJSONの層（町丁目・浸水想定・記号）が描かれない問題があった。`MapPanel.jsx` の `setWorkerUrl` と `vite.config.js` の `worker.format: "es"` で直した。開発サーバーでは再現しないので、ビルドまわりを変えたら `VITE_API_BASE` 付きでビルドして確かめる。
+- Vercelのプレビュー用URL（ブランチごと）は `ALLOWED_ORIGINS` に入っていないので、バックエンドにつながらない。
+
 ## 2026-09-29 追記: 地図の記号と画面の仕上げ（ユーザー評価「ほぼ完成」）
 
 - **記号**: 避難所・土のう置場の記号をユーザーがIllustratorで作り、`frontend/public/map-icons/shelter.svg`・`sandbag.svg`（24×24）に置いた。差し替えは同じ名前で上書きするだけ。`MapPanel.jsx` の `addSvgImage` がSVGに寸法を付けて48×48で描き出し、`addImage(..., { pixelRatio: 2 })` で登録する（Illustratorの書き出しはviewBoxだけで、Firefoxではそのままcanvasに描けないため）。表示はズーム15で24px（13で0.7倍、17で1.3倍）。

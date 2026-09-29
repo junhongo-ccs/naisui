@@ -137,7 +137,7 @@ PC (1920x1080基準、大画面では地図列のみ可変)
 - [ ] 公式情報未取得時は「未確認」表示で断定しない
 - [ ] 切迫ワード入力で緊急対応の定型案内に切替
 - [ ] `.env`・GeoTIFF等がgit管理外である
-- [ ] フロントがVercel、バックエンドがRenderに、`junhongo-ccs/naisui`経由でデプロイされている
+- [x] フロントがVercel、バックエンドがRenderに、`junhongo-ccs/naisui`経由でデプロイされている（2026-09-29。画面 https://naisui.vercel.app 、バックエンド https://naisui-api.onrender.com ）
 
 ## 8. 未確定の前提（推測で埋めた箇所）
 
