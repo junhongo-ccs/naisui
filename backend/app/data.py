@@ -25,11 +25,11 @@ PIPELINE_DIR = PROCESSED / "pysheds_surface_routing_roads/plateau2025_v3_road050
 
 # 画面・回答に必ず併記するモデルの前提（docs/01_概要・計画/PLATEAU導入計画.md 7章）。
 MODEL_INFO: dict[str, Any] = {
-    "label": "土地利用と道路の流れを反映した校正前スクリーニング結果",
+    "label": "土地利用と道路の流れを反映したスクリーニング結果",
     "version": "plateau2025_v3_road050",
     "data_versions": "土地利用: 東京都土地利用現況調査2021（PLATEAU 2025年度版）、建物: PLATEAU 2025年度版",
     "assumption": "土地利用と建物から、雨水が地表へ流出する割合（流出係数）をセルごとに仮定し、雨水は隣の低い道路へ優先して流れるとしています",
-    "not_evaluated": "下水道の管路、避難の可否、道路の通行可否は評価していません",
+    "not_evaluated": "下水道の管路は評価していません",
 }
 
 SCENARIOS: list[dict[str, Any]] = [

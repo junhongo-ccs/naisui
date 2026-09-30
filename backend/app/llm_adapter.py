@@ -175,7 +175,7 @@ def _validate(raw: dict[str, Any]) -> dict[str, Any]:
 def _sources(run_metadata: dict[str, Any], official_status: dict[str, Any], *, knowledge: bool) -> list[dict[str, str]]:
     sources = [
         {
-            "name": f"naisui PoC モデル (pysheds_surface_routing + PLATEAU土地利用 {MODEL_INFO['version']}, 校正前)",
+            "name": f"naisui PoC モデル (pysheds_surface_routing + PLATEAU土地利用 {MODEL_INFO['version']})",
             "retrieved_at": run_metadata.get("generated_at", datetime.now(timezone.utc).isoformat()),
         },
         {
