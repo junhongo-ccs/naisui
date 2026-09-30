@@ -127,7 +127,7 @@ def chat(req: ChatRequest) -> ChatResponse:
             scenario_id=req.scenario_id,
             official_status=policy.official_status_stub(None),
         )
-        return _to_chat_response(contract, contract["headline"])
+        return _to_chat_response(contract, contract["headline"], topic="about_map")
     if len(mentioned) > 1:
         contract = policy.ambiguous_location_response(multiple_towns=mentioned)
         return _to_chat_response(contract, contract["headline"])
@@ -156,7 +156,9 @@ def chat(req: ChatRequest) -> ChatResponse:
     return _to_chat_response(contract, contract["headline"], data.TOWN_SLUGS[town_name])
 
 
-def _to_chat_response(contract: dict, headline: str, town_slug: str | None = None) -> ChatResponse:
+def _to_chat_response(
+    contract: dict, headline: str, town_slug: str | None = None, topic: str | None = None
+) -> ChatResponse:
     lines = [headline, ""]
     lines.extend(f"・{fact}" for fact in contract["facts"])
     if contract["facts"]:
@@ -165,4 +167,4 @@ def _to_chat_response(contract: dict, headline: str, town_slug: str | None = Non
     if contract["safe_next_steps"]:
         lines.append("")
         lines.extend(f"→ {step}" for step in contract["safe_next_steps"])
-    return ChatResponse(display_text="\n".join(lines), town_slug=town_slug, **contract)
+    return ChatResponse(display_text="\n".join(lines), town_slug=town_slug, topic=topic, **contract)

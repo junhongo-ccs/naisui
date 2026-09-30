@@ -87,6 +87,21 @@ class DetectAboutMapTest(unittest.TestCase):
             with self.subTest(message=message):
                 self.assertTrue(detect_about_map(message))
 
+    def test_map_follow_up_questions(self):
+        # 画面の質問例（ChatPanel.jsx の MAP_FOLLOW_UP_QUESTIONS）と合わせる。押して送ると、町丁目を
+        # 選んでいなくても、このマップについての質問としてDifyに渡らなければならない。
+        for message in [
+            "このマップは何のためのもの？",
+            "このマップの使い方は？",
+            "このマップの地図の色は何を表している？",
+            "このマップはどうやって計算してるの？",
+            "このマップの試算は過去の浸水とどれくらい合う？",
+            "このマップで使っている技術は？",
+        ]:
+            with self.subTest(message=message):
+                self.assertTrue(detect_about_map(message))
+                self.assertIsNone(detect_out_of_scope(message))
+
     def test_town_questions_pass(self):
         # 画面の質問例と、町丁目の事実を聞く質問は、このマップについての質問として扱わない。
         for message in [

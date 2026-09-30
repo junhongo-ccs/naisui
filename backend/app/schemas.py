@@ -22,3 +22,5 @@ class ChatResponse(BaseModel):
     town_slug: str | None = None
     # 町丁目を特定できないときに示す選択肢（PoCのデータ範囲の10町丁目）。
     town_choices: list[dict[str, str]] = []
+    # 回答の話題。"about_map" はこのマップそのものや用語の意味についての回答で、画面はそれ用の質問例を出す。
+    topic: str | None = None

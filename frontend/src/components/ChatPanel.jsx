@@ -43,14 +43,24 @@ const FOLLOW_UP_QUESTIONS = [
   { label: "避難所・土のう置場", text: (town) => `${town}の近くの避難所と土のう置場は？` },
 ];
 
+// このマップそのものについての回答（topic "about_map"）のあとに示す質問例。RAG/04_このマップについて.md で
+// 答えられる話題に限る。どれも backend/app/policy.py の detect_about_map に掛かる言い方にする
+// （町丁目を選んでいなくても答えられるように。backend/tests/test_policy.py で確かめている）。
+const MAP_FOLLOW_UP_QUESTIONS = [
+  { label: "目的", text: "このマップは何のためのもの？" },
+  { label: "画面の使い方", text: "このマップの使い方は？" },
+  { label: "地図の色の見方", text: "このマップの地図の色は何を表している？" },
+  { label: "計算のしかた", text: "このマップはどうやって計算してるの？" },
+  { label: "過去の浸水との照合", text: "このマップの試算は過去の浸水とどれくらい合う？" },
+  { label: "使っている技術", text: "このマップで使っている技術は？" },
+];
+
 // 押すと入力欄に反映する（自動送信はしない）。直前に聞いた質問は出さない。
-function FollowUpQuestions({ townName, askedText, onPick }) {
-  const questions = FOLLOW_UP_QUESTIONS.map((q) => ({ label: q.label, text: q.text(townName) })).filter(
-    (q) => q.text !== askedText,
-  );
+function FollowUpQuestions({ title, questions: allQuestions, askedText, onPick }) {
+  const questions = allQuestions.filter((q) => q.text !== askedText);
   return (
     <div className="mt-3 pt-2 border-t border-gray-100">
-      <div className="text-xs text-gray-500 mb-1.5">{townName}について、ほかに聞けること</div>
+      <div className="text-xs text-gray-500 mb-1.5">{title}</div>
       <div className="flex flex-wrap gap-1.5">
         {questions.map((q) => (
           <button
@@ -107,9 +117,20 @@ export default function ChatPanel({
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages, loading]);
 
-  // 質問例は、町丁目を特定できた最新の回答にだけ出す（緊急時の案内には出さない）。
+  // 質問例は、町丁目を特定できた回答か、このマップについての回答の、最新のものにだけ出す（緊急時の案内には出さない）。
   const last = messages.at(-1);
-  const showFollowUp = !loading && last?.role === "assistant" && last.townName && last.status !== "emergency";
+  const showFollowUp =
+    !loading &&
+    last?.role === "assistant" &&
+    (last.townName || last.topic === "about_map") &&
+    last.status !== "emergency";
+  const followUpFor = (m) =>
+    m.topic === "about_map"
+      ? { title: "このマップについて、ほかに聞けること", questions: MAP_FOLLOW_UP_QUESTIONS }
+      : {
+          title: `${m.townName}について、ほかに聞けること`,
+          questions: FOLLOW_UP_QUESTIONS.map((q) => ({ label: q.label, text: q.text(m.townName) })),
+        };
   const pickFollowUp = (text) => {
     onInputChange(text);
     inputRef.current?.focus();
@@ -138,7 +159,7 @@ export default function ChatPanel({
             onSelectTown={onSelectTown}
             followUp={
               showFollowUp && m === last ? (
-                <FollowUpQuestions townName={m.townName} askedText={messages[i - 1]?.text} onPick={pickFollowUp} />
+                <FollowUpQuestions {...followUpFor(m)} askedText={messages[i - 1]?.text} onPick={pickFollowUp} />
               ) : null
             }
           />

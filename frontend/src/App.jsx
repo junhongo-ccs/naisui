@@ -56,7 +56,7 @@ export default function App() {
   const [scenarioDetail, setScenarioDetail] = useState(null);
 
   const [selectedTown, setSelectedTown] = useState(null); // {name, slug}
-  // 地域を選ぶ欄の開閉。町丁目が選ばれたら閉じ、会話の場所を空ける（見出しで開き直せる）。
+  // 地域を選ぶ欄の開閉。町丁目が選ばれたとき・質問を送ったときに閉じ、会話の場所を空ける（見出しで開き直せる）。
   const [selectorOpen, setSelectorOpen] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -90,6 +90,8 @@ export default function App() {
 
   const handleSend = async (text) => {
     setInput("");
+    // 会話が始まったら、町丁目を選んでいなくても地域の欄を閉じて回答を読む場所を空ける（見出しで開き直せる）。
+    setSelectorOpen(false);
     setError(null);
     setMessages((prev) => [...prev, { id: nextId(), role: "user", text }]);
     setLoading(true);
@@ -118,6 +120,7 @@ export default function App() {
           townChoices: res.town_choices,
           townName: towns.find((t) => t.slug === res.town_slug)?.name ?? null,
           status: res.status,
+          topic: res.topic ?? null,
           scenarioId,
           scenarioLabel: OFFICIAL_SCENARIO_LABEL,
         },
