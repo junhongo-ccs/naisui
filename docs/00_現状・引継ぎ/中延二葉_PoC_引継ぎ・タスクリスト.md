@@ -9,9 +9,9 @@
 ## 2026-09-29 追記（2）: デプロイ
 
 - **画面**: https://naisui.vercel.app （Vercel、プロジェクト `naisui`、Root Directory `frontend`）。環境変数 `VITE_API_BASE=https://naisui-api.onrender.com` はビルド時に埋め込まれるので、RenderのURLが変わったらVercelで再デプロイする。
-- **バックエンド**: https://naisui-api.onrender.com （Render、Blueprint `naisui-shinagawa` → サービス `naisui-api`、無料プラン、シンガポール）。設定は `render.yaml`。リポジトリ直下から `backend/` を起動し、`data/naisui_poc/` を読む。環境変数 `DIFY_API_KEY`（画面で入力）、`ALLOWED_ORIGINS=https://naisui.vercel.app`。
+- **バックエンド**: https://naisui-api.onrender.com （Render、Blueprint `naisui-shinagawa` → サービス `naisui-api`、Starterプラン（月7ドル）、シンガポール）。設定は `render.yaml`。リポジトリ直下から `backend/` を起動し、`data/naisui_poc/` を読む。環境変数 `DIFY_API_KEY`（画面で入力）、`ALLOWED_ORIGINS=https://naisui.vercel.app`。
 - masterへのプッシュで両方が自動デプロイされる（Renderは `render.yaml` の `buildFilter` に書いたバックエンドとデータの変更のときだけ）。
-- Renderの無料プランは15分ほどでスリープし、次の最初の表示に1分近くかかる。デモの前に一度開いて起こす。
+- Renderは、無料プランだと15分ほどでスリープし、最初の表示に1分近くかかるため、Starterプラン（月7ドル）にした（ユーザー決定）。プランは `render.yaml` の `plan` と合わせておく（Blueprintの同期で戻されないように）。
 - 本番ビルドでMapLibreのworkerが出力されず、GeoJSONの層（町丁目・浸水想定・記号）が描かれない問題があった。`MapPanel.jsx` の `setWorkerUrl` と `vite.config.js` の `worker.format: "es"` で直した。開発サーバーでは再現しないので、ビルドまわりを変えたら `VITE_API_BASE` 付きでビルドして確かめる。
 - Vercelのプレビュー用URL（ブランチごと）は `ALLOWED_ORIGINS` に入っていないので、バックエンドにつながらない。
 

@@ -4,7 +4,8 @@ services:
   - type: web
     name: naisui-api
     runtime: python
-    plan: free
+    # 2026-09-29 に無料プランからStarter（月7ドル）へ変更。無料プランは15分ほどでスリープし、最初の表示に1分近くかかるため
+    plan: starter
     region: singapore
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
