@@ -140,7 +140,7 @@ def generate_about_map(*, message: str, scenario_id: str, official_status: dict[
         "status": "caution",
         "facts": _ABOUT_MAP_FACTS,
         "model_context": f"このマップの試算は{MODEL_INFO['label']}で、実際の浸水予報ではありません。{MODEL_INFO['not_evaluated']}。",
-        "safe_next_steps": ["計算のしかたや使っている技術は、画面上部の「このマップについて」で詳しく読めます。"],
+        "safe_next_steps": ["計算のしかたや使っている技術は、画面上部の「このマップについて知る」で詳しく読めます。"],
         "prohibited_claim_check": {k: False for k in PROHIBITED_KEYS},
         "sources": [],
     }
