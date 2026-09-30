@@ -5,7 +5,7 @@
 
 import unittest
 
-from app.policy import detect_out_of_scope
+from app.policy import detect_about_map, detect_out_of_scope
 
 
 class DetectOutOfScopeTest(unittest.TestCase):
@@ -53,6 +53,58 @@ class DetectOutOfScopeTest(unittest.TestCase):
         ]:
             with self.subTest(message=message):
                 self.assertIsNone(detect_out_of_scope(message))
+
+
+class DetectAboutMapTest(unittest.TestCase):
+    def test_about_map(self):
+        # このマップそのものについての質問。町丁目が決まっていなくてもDifyに渡す。
+        for message in [
+            "このマップは何？",
+            "このマップはどうやって計算してるの？",
+            "このツールの目的は？",
+            "計算の方法を教えて",
+            "試算の前提は？",
+            "どうやって作ったの？",
+            "チャットの仕組みは？",
+            "使い方を教えて",
+            "地図の見方が分からない",
+            "紫色は何？",
+            "使っている技術は？",
+            "誰が作ったの？",
+            "精度はどれくらい？",
+            "流出係数って何？",
+            "Difyを使ってる？",
+            # 用語の意味を聞く質問
+            "内水氾濫って何？",
+            "内水はん濫とは",
+            "暗渠って何？",
+            "あんきょの意味は？",
+            "立会川について教えて",
+            "浸水想定区域とは何ですか",
+            "アンダーパスって？",
+            "床上浸水と床下浸水の違いは？",
+        ]:
+            with self.subTest(message=message):
+                self.assertTrue(detect_about_map(message))
+
+    def test_town_questions_pass(self):
+        # 画面の質問例と、町丁目の事実を聞く質問は、このマップについての質問として扱わない。
+        for message in [
+            "中延六丁目について教えて",
+            "水がたまりやすいのはどこ？",
+            "土地の高さや地形は？",
+            "過去にどれくらい浸水した？",
+            "公式の浸水想定と試算はどう違う？",
+            "近くの避難所と土のう置場は？",
+            "土のうはどこでもらえる？",
+            # 用語が入っていても、場所や町丁目ごとの事実を聞く質問
+            "暗渠はどこを通ってる？",
+            "立会川の近くは浸水しやすい？",
+            "土のう置場はどこ？",
+            "冠水しやすい道は？",
+        ]:
+            with self.subTest(message=message):
+                self.assertFalse(detect_about_map(message))
 
 
 if __name__ == "__main__":

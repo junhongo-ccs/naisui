@@ -119,6 +119,15 @@ def chat(req: ChatRequest) -> ChatResponse:
     if other_places:
         contract = policy.ambiguous_location_response(unrecognized_place=other_places[0])
         return _to_chat_response(contract, contract["headline"])
+    # このマップそのもの（目的・使い方・計算のしかた・技術）や用語の意味を聞く質問は、町丁目が決まっていなくても答える。
+    # 町丁目名が書かれていれば、その町丁目の質問として下で扱う。選択中の町丁目は変えない。
+    if not mentioned and policy.detect_about_map(req.message):
+        contract = llm_adapter.generate_about_map(
+            message=req.message,
+            scenario_id=req.scenario_id,
+            official_status=policy.official_status_stub(None),
+        )
+        return _to_chat_response(contract, contract["headline"])
     if len(mentioned) > 1:
         contract = policy.ambiguous_location_response(multiple_towns=mentioned)
         return _to_chat_response(contract, contract["headline"])

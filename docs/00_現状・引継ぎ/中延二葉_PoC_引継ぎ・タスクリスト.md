@@ -30,7 +30,7 @@
 
 チャットは、Difyのナレッジ `naisui-knowledge` を参照して、町丁目の地域の背景・客観的な事実・避難所・土のう置場を答えるようになった。画面（フロントエンド）から送って、回答と出典の表示まで確認した。
 
-- Dify: クラウド版。チャットフロー「開始 → 知識検索 → LLM → 回答」。LLMは Gemini 3.8 Flash（有料枠）、埋め込みは gemini-embedding-001。プロンプト・入力変数・モデル設定は `data/naisui_poc/04_llm_knowledge/dify_llm_prompt.md`、ナレッジの設定は `RAG/README.md` のチェックリストを正とする。
+- Dify: クラウド版。チャットフロー「開始 → 知識検索 → LLM → 回答」。LLMは Gemini 3.8 Flash（有料枠）、埋め込みは gemini-embedding-001。SYSTEMに貼るプロンプトは `data/naisui_poc/04_llm_knowledge/dify_llm_prompt.md`（ファイル全体をそのまま貼る）、入力変数・モデル設定・貼り方の注意は同じフォルダの `dify_chatflow_setup.md`、ナレッジの設定は `RAG/README.md` のチェックリストを正とする。
 - バックエンド: `backend/app/llm_adapter.py` がDifyの `/chat-messages` を呼ぶ。キーとURLは `backend/.env`（コミットしない。見本は `backend/.env.example`）。質問の頭に町丁目名を付けて送り、応答をJSON契約で検証する。契約違反・`prohibited_claim_check` のtrue・通信エラー・タイムアウトはテンプレート応答に戻す。`sources` はバックエンドが付ける。キーが空ならDifyを呼ばない。
 - 決定的な判定（緊急ワード、範囲外、特定できない地名、複数の町丁目）は、これまでどおりDifyを呼ぶ前に `main.py` / `policy.py` で行う。
 - ナレッジの町丁目ファイルに、避難所の住所・種別と、土のう置場の住所・袋の数（令和7年11月13日時点）を加えた（`tools/build_town_facts.py`・`tools/build_rag_markdown.py` を変更して再生成。数値の集計結果は変わっていない）。地図に避難所と土のう置場を載せているのに、チャットが答えられなければ意味がない、というユーザー指摘による。

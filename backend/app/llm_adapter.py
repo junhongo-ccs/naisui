@@ -2,7 +2,8 @@
 
 Builds the response contract
 (docs/02_仕様・要件/中延二葉_段階3_Dify_LLM安全ガードレール仕様.md §6) by calling the Dify
-chatflow (prompt: data/naisui_poc/04_llm_knowledge/dify_llm_prompt.md, knowledge:
+chatflow (prompt: data/naisui_poc/04_llm_knowledge/dify_llm_prompt.md, setup notes:
+dify_chatflow_setup.md in the same folder, knowledge:
 naisui-knowledge). The deterministic policy checks in main.py/policy.py run before
 this module and are never delegated to Dify. If Dify is not configured, times out,
 or returns something that breaks the contract, the template response is returned.
@@ -84,22 +85,73 @@ def _dify_contract(
     town_risk: dict[str, Any],
     official_status: dict[str, Any],
 ) -> dict[str, Any]:
+    # 開始ノードの入力変数（dify_chatflow_setup.md「開始ノードの入力変数」）。
+    inputs = {
+        "town_name": town_name,
+        "scenario_label": SCENARIO_META.get(scenario_id, {}).get("label", scenario_id),
+        "calibration_status": "pre_calibration_screening",
+        "risk_level": town_risk.get("risk_level", "不明"),
+        "area_ratio_pct": str(round(town_risk.get("area_over_threshold_ratio", 0.0) * 100, 2)),
+        "official_status": json.dumps(
+            {k: v for k, v in official_status.items() if k != "retrieved_at"}, ensure_ascii=False
+        ),
+    }
+    # 知識検索のクエリはsys.query。町丁目名を付けて、その町丁目のファイルが検索に掛かるようにする。
+    return _call_dify(inputs, f"{town_name}について: {message}")
+
+
+# このマップそのものについての質問では、町丁目の入力変数にこの値を入れる。
+# Difyの入力変数を増やさずに済むよう、プロンプト側はこの値を見て答え方を変える（dify_llm_prompt.md「答え方」2行目）。
+ABOUT_MAP_TOWN = "このマップ全般（町丁目の指定なし）"
+_ABOUT_MAP_FACTS = [
+    "このマップは、品川区 中延・二葉地区の10町丁目で、大雨のとき雨水が地表にたまりやすい場所を地形と土地利用から試算し、東京都の公式の浸水想定と並べて見せるPoCです。",
+    "試算は、国土地理院の5m標高データとPLATEAUの土地利用をもとに、下水道が受け切れない分の雨水が低い所へ流れてたまる量を10分ごとに24時間分計算したものです。",
+    "下水道の管路は計算に入れていません。今の雨の状況や浸水の予報を伝えるものではありません。",
+]
+
+
+def generate_about_map(*, message: str, scenario_id: str, official_status: dict[str, Any]) -> dict[str, Any]:
+    """このマップ（Webツール）についての質問に答える。町丁目の数値は渡さない。"""
+    if os.environ.get("DIFY_API_KEY"):
+        try:
+            inputs = {
+                "town_name": ABOUT_MAP_TOWN,
+                "scenario_label": SCENARIO_META.get(scenario_id, {}).get("label", scenario_id),
+                "calibration_status": "pre_calibration_screening",
+                "risk_level": "対象外（町丁目の指定なし）",
+                "area_ratio_pct": "対象外",
+                "official_status": json.dumps(
+                    {k: v for k, v in official_status.items() if k != "retrieved_at"}, ensure_ascii=False
+                ),
+            }
+            # 「このマップについて」を付けて、RAG/04_このマップについて.md のチャンクが検索に掛かるようにする。
+            contract = _call_dify(inputs, f"このマップについて: {message}")
+            contract["sources"] = [
+                {
+                    "name": f"Difyナレッジ {KNOWLEDGE_NAME}（RAG/：このマップについて・用語）",
+                    "retrieved_at": datetime.now(timezone.utc).isoformat(),
+                }
+            ]
+            return contract
+        except Exception as exc:  # タイムアウト・通信エラー・契約違反はすべてテンプレートに戻す
+            logger.warning("Dify response rejected, falling back to template: %s", exc)
+    return {
+        "headline": "このマップについて",
+        "status": "caution",
+        "facts": _ABOUT_MAP_FACTS,
+        "model_context": f"このマップの試算は{MODEL_INFO['label']}で、実際の浸水予報ではありません。{MODEL_INFO['not_evaluated']}。",
+        "safe_next_steps": ["計算のしかたや使っている技術は、画面上部の「このマップについて」で詳しく読めます。"],
+        "prohibited_claim_check": {k: False for k in PROHIBITED_KEYS},
+        "sources": [],
+    }
+
+
+def _call_dify(inputs: dict[str, str], query: str) -> dict[str, Any]:
     base_url = os.environ.get("DIFY_BASE_URL", "https://api.dify.ai/v1").rstrip("/")
     timeout = float(os.environ.get("DIFY_TIMEOUT_SECONDS", "30"))
     body = {
-        # 開始ノードの入力変数（dify_llm_prompt.md「開始ノードの入力変数」）。
-        "inputs": {
-            "town_name": town_name,
-            "scenario_label": SCENARIO_META.get(scenario_id, {}).get("label", scenario_id),
-            "calibration_status": "pre_calibration_screening",
-            "risk_level": town_risk.get("risk_level", "不明"),
-            "area_ratio_pct": str(round(town_risk.get("area_over_threshold_ratio", 0.0) * 100, 2)),
-            "official_status": json.dumps(
-                {k: v for k, v in official_status.items() if k != "retrieved_at"}, ensure_ascii=False
-            ),
-        },
-        # 知識検索のクエリはsys.query。町丁目名を付けて、その町丁目のファイルが検索に掛かるようにする。
-        "query": f"{town_name}について: {message}",
+        "inputs": inputs,
+        "query": query,
         "response_mode": "blocking",
         "user": "naisui-poc-backend",
     }
