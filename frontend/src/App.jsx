@@ -55,6 +55,33 @@ function FullscreenButton() {
   );
 }
 
+// PCで右のチャット欄を開け閉めするつまみ。地図の右端に付け、閉じている間も押せるようにする。
+function ChatPaneToggle({ open, onToggle, controls }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      aria-label={open ? "チャットを閉じる" : "チャットを開く"}
+      title={open ? "チャットを閉じる" : "チャットを開く"}
+      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 bg-white px-1.5 py-3 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        className={"h-4 w-4 flex-none transition-transform duration-300 ease-in-out motion-reduce:transition-none " + (open ? "" : "rotate-180")}
+      >
+        <path d="M7.5 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {!open && <span className="whitespace-nowrap pr-0.5">チャット</span>}
+    </button>
+  );
+}
+
+// PCのチャット欄の幅。開いているときの外枠と、滑らせる中身で同じ値を使う。
+const CHAT_PANE_WIDTH = "w-[clamp(360px,32vw,520px)]";
+
 let msgSeq = 0;
 const nextId = () => `m${++msgSeq}`;
 
@@ -68,6 +95,8 @@ export default function App() {
   const [selectedTown, setSelectedTown] = useState(null); // {name, slug}
   // 地域を選ぶ欄の開閉。町丁目が選ばれたとき・質問を送ったときに閉じ、会話の場所を空ける（見出しで開き直せる）。
   const [selectorOpen, setSelectorOpen] = useState(true);
+  // PCで右のチャット欄を開いているか。閉じると地図が画面いっぱいに広がる（スマートフォンは常にチャットだけ）。
+  const [chatPaneOpen, setChatPaneOpen] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -174,8 +203,8 @@ export default function App() {
       </header>
 
       {isPC ? (
-        <div className="flex-1 min-h-0 grid grid-cols-[minmax(0,1fr)_clamp(360px,32vw,520px)] grid-rows-1">
-          <div className="border-r border-gray-200 min-h-0 h-full">
+        <div className="flex-1 min-h-0 flex">
+          <div className="relative flex-1 min-w-0 min-h-0 h-full">
             <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">地図を読み込み中…</div>}>
               {scenarioDetail && (
                 <MapPanel
@@ -185,28 +214,40 @@ export default function App() {
                 />
               )}
             </Suspense>
+            <ChatPaneToggle open={chatPaneOpen} onToggle={() => setChatPaneOpen((v) => !v)} controls="chat-pane" />
           </div>
-          <div className="flex flex-col min-h-0 h-full">
-            <div className="p-3 border-b border-gray-100">
-              <TownSelector
-                towns={towns}
-                selectedSlug={selectedTown?.slug}
-                onSelect={handleTownSelect}
-                open={selectorOpen}
-                onOpenChange={setSelectorOpen}
-              />
-            </div>
-            <div className="flex-1 min-h-0">
-              <ChatPanel
-                messages={messages}
-                input={input}
-                onInputChange={setInput}
-                onSend={handleSend}
-                loading={loading}
-                error={error}
-                currentScenarioId={scenarioId}
-                onSelectTown={handleTownSelect}
-              />
+          {/* 外枠の幅を0まで縮め、中身は幅を保ったまま右端に寄せて、右へ滑って消えるように見せる。
+              地図は MapPanel の ResizeObserver で幅の変化に追従する。閉じている間はinertで操作と読み上げの対象から外す。 */}
+          <div
+            id="chat-pane"
+            inert={!chatPaneOpen}
+            className={
+              "flex justify-end flex-none min-h-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out motion-reduce:transition-none " +
+              (chatPaneOpen ? CHAT_PANE_WIDTH : "w-0")
+            }
+          >
+            <div className={"flex flex-col flex-none min-h-0 h-full border-l border-gray-200 " + CHAT_PANE_WIDTH}>
+              <div className="p-3 border-b border-gray-100">
+                <TownSelector
+                  towns={towns}
+                  selectedSlug={selectedTown?.slug}
+                  onSelect={handleTownSelect}
+                  open={selectorOpen}
+                  onOpenChange={setSelectorOpen}
+                />
+              </div>
+              <div className="flex-1 min-h-0">
+                <ChatPanel
+                  messages={messages}
+                  input={input}
+                  onInputChange={setInput}
+                  onSend={handleSend}
+                  loading={loading}
+                  error={error}
+                  currentScenarioId={scenarioId}
+                  onSelectTown={handleTownSelect}
+                />
+              </div>
             </div>
           </div>
         </div>

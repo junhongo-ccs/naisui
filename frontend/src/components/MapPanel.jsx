@@ -270,13 +270,21 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
     mapRef.current = map;
     map.addControl(new NavigationControl(), "top-right");
 
-    // 地図列の幅は画面幅に応じて変わる。resizeだけでは選択地点の表示範囲が再計算されないため、
-    // 選択中の町丁目の境界を現在のコンテナ寸法で再fitする。
+    // 地図列の幅は画面幅やチャット欄の開閉に応じて変わる。resizeだけでは選択地点の表示範囲が再計算されないため、
+    // 選択中の町丁目の境界を現在のコンテナ寸法で再fitする。チャット欄の開閉アニメーション中は毎フレーム幅が変わるので、
+    // 再fitは幅が落ち着いてから1回だけ行う（毎フレームfitBoundsのアニメーションをやり直さない）。
+    // resize はキャンバスを作り直して中身を消し、描き直しは次のフレームになるため、そのままだと幅が変わるたびに
+    // 地図が一瞬白くなる。ResizeObserver は画面に描く前に呼ばれるので、ここで同期して描き直し、白い瞬間を出さない。
+    let refitTimer;
     const resizeObserver = new ResizeObserver(() => {
       map.resize();
-      if (readyRef.current && selectedTownNameRef.current) {
-        focusTown(map, townsFeaturesRef.current, selectedTownNameRef.current);
-      }
+      map.redraw();
+      clearTimeout(refitTimer);
+      refitTimer = setTimeout(() => {
+        if (readyRef.current && selectedTownNameRef.current) {
+          focusTown(map, townsFeaturesRef.current, selectedTownNameRef.current);
+        }
+      }, 150);
     });
     resizeObserver.observe(containerRef.current);
 
@@ -440,6 +448,7 @@ export default function MapPanel({ scenarioDetail, selectedTownName, onTownClick
 
     return () => {
       resizeObserver.disconnect();
+      clearTimeout(refitTimer);
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
