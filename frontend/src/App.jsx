@@ -38,9 +38,19 @@ function FullscreenButton() {
     <button
       type="button"
       onClick={toggle}
-      className="text-xs text-white border border-white/70 rounded px-2 py-0.5 whitespace-nowrap hover:bg-white/10"
+      className="inline-flex items-center gap-1 text-xs text-white border border-white/70 rounded px-2 py-0.5 whitespace-nowrap hover:bg-white/10"
     >
       {isFull ? "全画面を終了" : "全画面で表示"}
+      {/* Material Symbols Outlined「open_in_full」「close_fullscreen」（Apache License 2.0）。フォントを読み込まずにSVGで直接描く。 */}
+      <svg aria-hidden="true" viewBox="0 -960 960 960" className="h-3.5 w-3.5 flex-none" fill="currentColor">
+        <path
+          d={
+            isFull
+              ? "m136-80-56-56 264-264H160v-80h320v320h-80v-184L136-80Zm344-400v-320h80v184l264-264 56 56-264 264h184v80H480Z"
+              : "M120-120v-320h80v184l504-504H520v-80h320v320h-80v-184L256-200h184v80H120Z"
+          }
+        />
+      </svg>
     </button>
   );
 }
