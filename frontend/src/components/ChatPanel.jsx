@@ -77,6 +77,27 @@ function FollowUpQuestions({ title, questions: allQuestions, askedText, onPick }
   );
 }
 
+// 回答を待つ間の表示。3つの丸の動き始めをずらして波打たせる（動きは tailwind.config.js の typing）。
+// 読み上げでは丸を読まず「回答を作っています」と伝える。
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      {/* 丸は吹き出しの文字と同じ色（bg-current）。Bubble の text-gray-900 と合わせる。 */}
+      <div role="status" className="flex items-center gap-1.5 rounded-2xl px-4 py-3.5 bg-white border border-gray-200 text-gray-900">
+        <span className="sr-only">回答を作っています</span>
+        {[0, 150, 300].map((delay) => (
+          <span
+            key={delay}
+            aria-hidden="true"
+            className="h-2 w-2 rounded-full bg-current animate-typing motion-reduce:animate-none"
+            style={{ animationDelay: `${delay}ms` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Bubble({ message, currentScenarioId, onSelectTown, followUp }) {
   if (message.role === "system") return <SystemNotice text={message.text} />;
   const isUser = message.role === "user";
@@ -164,13 +185,7 @@ export default function ChatPanel({
             }
           />
         ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="rounded-2xl px-4 py-2 bg-white border border-gray-200 text-gray-400 text-base">
-              考えています…
-            </div>
-          </div>
-        )}
+        {loading && <TypingIndicator />}
         {error && (
           <div className="flex justify-center">
             <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2 flex items-center gap-2">
@@ -191,7 +206,7 @@ export default function ChatPanel({
         <input
           ref={inputRef}
           maxLength={200}
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-400"
+          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:border-brand-700 focus:ring-1 focus:ring-brand-700"
           placeholder="町丁目名を入力するか、ボタンで選択してください"
           value={input}
           onChange={(e) => onInputChange(e.target.value)}

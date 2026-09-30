@@ -24,6 +24,16 @@ export default {
       fontSize: {
         base: ["15px", "1.6"],
       },
+      // 回答を待つ間の3つの丸（ChatPanel.jsx の TypingIndicator）。少し浮きながら濃くなる動きを、丸ごとにずらして波にする。
+      keyframes: {
+        typing: {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.35" },
+          "30%": { transform: "translateY(-4px)", opacity: "1" },
+        },
+      },
+      animation: {
+        typing: "typing 1.2s ease-in-out infinite",
+      },
     },
   },
   plugins: [],
