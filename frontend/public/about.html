@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>品川区 中延・二葉地区 雨水のたまりやすさマップ</title>
+<meta name="description" content="品川区 中延・二葉地区の雨水のたまりやすさマップでやったこと、計算のしかた、使っている技術をまとめた資料です。">
+<link rel="icon" href="/favicon.png" type="image/png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="品川区 中延・二葉地区 雨水のたまりやすさマップ">
+<meta property="og:title" content="品川区 中延・二葉地区 雨水のたまりやすさマップ ― このマップについて">
+<meta property="og:description" content="品川区 中延・二葉地区の雨水のたまりやすさマップでやったこと、計算のしかた、使っている技術をまとめた資料です。">
+<meta property="og:url" content="https://naisui.vercel.app/about.html">
+<meta property="og:image" content="https://naisui.vercel.app/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root { color-scheme: light; box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden]:not([hidden=until-found i]) { display: none !important; }
+
+  :root {
+    --bg: #f6f7f5;
+    --surface: #ffffff;
+    --ink: #1d2721;
+    --ink-2: #4a564f;
+    --ink-3: #6b766f;
+    --rule: #dde2dd;
+    --accent: #15803d;
+    --accent-ink: #ffffff;
+    --accent-soft: #e8f3ec;
+    --slate: #3f4b44;
+    --pond: #8b5cf6;
+    --pond-soft: #ede5fb;
+    --hazard: #7890a8;
+    --hazard-soft: #e3e9ef;
+    --sandbag: #d97706;
+    --warn-bg: #fdf4e3;
+    --warn-ink: #8a5300;
+    --code-bg: #eef1ee;
+    --font: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Consolas", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #141a16;
+      --surface: #1b231e;
+      --ink: #e4ebe6;
+      --ink-2: #b6c2ba;
+      --ink-3: #8f9b93;
+      --rule: #2f3a33;
+      --accent: #4ade80;
+      --accent-ink: #0b2415;
+      --accent-soft: #1d3326;
+      --slate: #9fb0a6;
+      --pond: #b69cf7;
+      --pond-soft: #2a2340;
+      --hazard: #9fb3c8;
+      --hazard-soft: #232c35;
+      --sandbag: #f59e0b;
+      --warn-bg: #33270f;
+      --warn-ink: #f3c677;
+      --code-bg: #232c26;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #141a16;
+    --surface: #1b231e;
+    --ink: #e4ebe6;
+    --ink-2: #b6c2ba;
+    --ink-3: #8f9b93;
+    --rule: #2f3a33;
+    --accent: #4ade80;
+    --accent-ink: #0b2415;
+    --accent-soft: #1d3326;
+    --slate: #9fb0a6;
+    --pond: #b69cf7;
+    --pond-soft: #2a2340;
+    --hazard: #9fb3c8;
+    --hazard-soft: #232c35;
+    --sandbag: #f59e0b;
+    --warn-bg: #33270f;
+    --warn-ink: #f3c677;
+    --code-bg: #232c26;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.8;
+    padding-inline: 16px;
+  }
+  .page { max-width: 880px; margin-inline: auto; padding-block: 0 72px; }
+
+  header.masthead {
+    background: var(--accent);
+    color: var(--accent-ink);
+    margin-inline: -16px;
+    padding: 28px 16px 24px;
+  }
+  header.masthead .inner { max-width: 880px; margin-inline: auto; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.08em; opacity: 0.85; }
+  h1 { font-size: clamp(26px, 5vw, 34px); line-height: 1.35; margin: 6px 0 10px; text-wrap: balance; }
+  .lede { max-width: 62ch; margin: 0; opacity: 0.95; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 13px; opacity: 0.9; }
+  .open { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 18px; }
+  .open-link {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    background: var(--accent-ink); color: var(--accent);
+    border-radius: 999px; padding: 8px 18px; font-weight: 700; text-decoration: none;
+  }
+  .open-link:hover { opacity: 0.92; }
+  .open-link:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 3px; }
+  .open-link .url { font-family: var(--mono); font-size: 13px; font-weight: 400; opacity: 0.8; }
+  .open-note { font-size: 13px; opacity: 0.85; }
+
+  nav.toc {
+    margin-top: 24px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  nav.toc a {
+    font-size: 13px; text-decoration: none; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 3px 12px; font-weight: 700;
+    background: var(--surface);
+  }
+  nav.toc a:hover { background: var(--accent-soft); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  section { margin-top: 48px; }
+  h2 {
+    font-size: 22px; line-height: 1.4; margin: 0 0 14px; text-wrap: balance;
+    padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+  }
+  h3 { font-size: 17px; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  ul { margin: 0 0 12px; padding-left: 1.3em; }
+  li { margin-bottom: 4px; }
+  .muted { color: var(--ink-2); }
+  .small { font-size: 14px; }
+  code, .num { font-family: var(--mono); font-size: 0.9em; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .callout {
+    background: var(--warn-bg); color: var(--warn-ink);
+    border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 15px;
+  }
+  .callout strong { color: inherit; }
+
+  /* 画面でできること */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+  .feature { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; }
+  .feature h4 { margin: 0 0 6px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .feature p { font-size: 14px; margin: 0; color: var(--ink-2); }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; flex: none; display: inline-block; }
+  .sw-hazard { background: var(--hazard); }
+  .sw-pond { background: linear-gradient(90deg, #e2cef2, var(--pond)); }
+  .sw-shelter { background: #16a34a; }
+  .sw-sandbag { background: var(--sandbag); border-radius: 50%; }
+  .sw-chat { background: var(--slate); border-radius: 50%; }
+  .sw-full { background: transparent; border: 2px solid var(--accent); }
+
+  /* 計算の流れ */
+  ol.pipeline { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 0; counter-reset: step; }
+  ol.pipeline li {
+    counter-increment: step;
+    display: grid; grid-template-columns: 40px 1fr; gap: 14px;
+    padding: 14px 0; border-top: 1px solid var(--rule); margin: 0;
+  }
+  ol.pipeline li:last-child { border-bottom: 1px solid var(--rule); }
+  ol.pipeline li::before {
+    content: counter(step);
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: var(--mono); font-weight: 600; font-size: 15px;
+    display: grid; place-items: center; margin-top: 2px;
+  }
+  ol.pipeline h4 { margin: 0 0 4px; font-size: 16px; }
+  ol.pipeline p { margin: 0 0 4px; font-size: 15px; }
+  .param { display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--ink-2); background: var(--code-bg); border-radius: 4px; padding: 0 6px; margin: 2px 4px 2px 0; }
+
+  .formula {
+    font-family: var(--mono); font-size: 14px; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 4px solid var(--pond);
+    border-radius: 6px; padding: 10px 14px; margin: 8px 0 10px; overflow-x: auto; white-space: nowrap;
+  }
+
+  /* 雨の配分 */
+  .rain { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px 10px; margin: 12px 0; }
+  .rain svg { width: 100%; height: auto; display: block; }
+  .rain .cap { font-size: 13px; color: var(--ink-2); margin: 6px 0 0; }
+
+  /* 表 */
+  .table-wrap { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 13px; color: var(--ink-2); font-weight: 700; background: var(--code-bg); white-space: nowrap; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td .sub { display: block; font-size: 12px; color: var(--ink-3); }
+
+  .level { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+
+  /* チャットの流れ */
+  .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 12px 0; }
+  .flow .box { flex: 1 1 150px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+  .flow .box b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .flow .box span { color: var(--ink-2); font-size: 13px; }
+  .flow .arrow { align-self: center; color: var(--ink-3); font-size: 18px; }
+  .flow .box.gate { border-color: var(--accent); background: var(--accent-soft); }
+
+  /* 導入した技術 */
+  .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .stack .group { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+  .stack h4 { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.06em; color: var(--ink-2); }
+  .stack dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 14px; }
+  .stack dt { font-weight: 700; }
+  .stack dd { margin: 0; color: var(--ink-2); }
+
+  /* 経緯 */
+  .timeline { list-style: none; padding: 0; margin: 12px 0 0; }
+  .timeline li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 8px 0; border-top: 1px dashed var(--rule); margin: 0; font-size: 15px; }
+  .timeline time { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 600; padding-top: 2px; }
+
+  footer { margin-top: 56px; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 14px; }
+
+  @media (max-width: 520px) {
+    ol.pipeline li { grid-template-columns: 34px 1fr; gap: 10px; }
+    .timeline li { grid-template-columns: 1fr; gap: 0; }
+    .stack dl { grid-template-columns: 1fr; gap: 0 0; }
+    .stack dd { margin-bottom: 6px; }
+    .flow .arrow { transform: rotate(90deg); width: 100%; text-align: center; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="inner">
+    <div class="eyebrow">内水氾濫 AI・GIS PoC ／ 2026年9月29日時点</div>
+    <h1>品川区 中延・二葉地区 雨水のたまりやすさマップ</h1>
+    <p class="lede">大雨のとき、どこに雨水がたまりやすいかを地図で示し、町丁目ごとの地形や過去の浸水をチャットで説明するPoCです。やったこと、計算のしかた、使っている技術をまとめました。</p>
+    <div class="meta">
+      <span>対象: 中延一〜六丁目・二葉一〜四丁目（10町丁目）</span>
+      <span>状態: 画面はほぼ完成</span>
+    </div>
+    <div class="open">
+      <a class="open-link" href="https://naisui.vercel.app" target="_blank" rel="noopener">マップを開く<span class="url">naisui.vercel.app</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <nav class="toc" aria-label="目次">
+    <a href="#what">これは何か</a>
+    <a href="#screen">画面でできること</a>
+    <a href="#calc">計算のしかた</a>
+    <a href="#check">実績との照合</a>
+    <a href="#chat">チャットのしくみ</a>
+    <a href="#data">使っているデータ</a>
+    <a href="#stack">導入した技術</a>
+    <a href="#history">経緯</a>
+  </nav>
+
+  <section id="what">
+    <h2>これは何か</h2>
+    <p>中延・二葉は立会川の谷沿いにある町です。立会川は昭和44〜47年に暗渠になり、今は下水道の幹線（立会川幹線）で、上は立会道路になっています。令和7年9月11日の大雨では、区に報告された浸水件数の多い上位6町丁目が、すべてこの暗渠が町内を通る町丁目でした。</p>
+    <p>このマップは、地形と土地利用から「雨水が地表にたまりやすい場所」を試算して、東京都の公式の浸水想定と並べて見せます。チャットでは、町丁目ごとの地形・試算・公式の想定・過去の浸水・近くの避難所と土のう置場を、根拠のある事実の範囲で答えます。</p>
+    <div class="callout">
+      <strong>このマップは、今の状況や浸水の予報を伝えるものではありません。</strong>
+      平時に地域を知るためのハザードマップです。試算は下水道の管路を含まないスクリーニングで、避難の判断や道路の通行可否には使いません。避難や警報は、品川区・東京都・気象庁の公式情報を優先します。
+    </div>
+  </section>
+
+  <section id="screen">
+    <h2>画面でできること</h2>
+    <p class="muted small">PCでは左に地図、右にチャットの2列です。スマートフォンではチャットだけを表示します。</p>
+    <div class="features">
+      <div class="feature">
+        <h4><span class="swatch sw-hazard" aria-hidden="true"></span>公式の浸水想定</h4>
+        <p>東京都の雨水出水浸水想定区域図（1時間153mm・24時間690mmの想定最大規模の大雨）。深さ5段階の青灰色で表示します。</p>
+      </div>
+      <div class="feature">
+        <h4><span class="swatch sw-pond" aria-hidden="true"></span>雨水がたまりやすい場所</h4>
+        <p>自前の試算。同じ大雨で深さ1cm以上たまるセルを紫で表示し、深いほど濃くしています。公式の層と色相で区別しています。</p>
+      </div>
+      <div class="feature">
+        <h4><span class="swatch sw-shelter" aria-hidden="true"></span>避難所 <span class="swatch sw-sandbag" aria-hidden="true"></span>土のう置場</h4>
+        <p>独自にデザインした記号で表示。押すと名前・住所、土のう置場は袋の数を吹き出しで出します。避難所の開設状況は公式情報で確認するよう添えています。</p>
+      </div>
+      <div class="feature">
+        <h4><span class="swatch sw-chat" aria-hidden="true"></span>チャット</h4>
+        <p>町丁目を選ぶか名前を入力して質問します。回答の下に「水がたまりやすい場所」「過去の浸水」など、続けて聞ける質問例を出します。</p>
+      </div>
+      <div class="feature">
+        <h4><span class="swatch sw-full" aria-hidden="true"></span>全画面表示</h4>
+        <p>ヘッダーのボタンで、地図とチャットを含むページ全体を全画面にします。ノートPCの狭い画面向けです。Escで戻ります。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <h2>計算のしかた</h2>
+    <p>地盤の高さのデータの上に雨を降らせ、下水道が受け切れない分の雨水が、地表の低い所へ流れてたまる量を10分ごとに24時間分計算します。そのうち最も深くなった時点の深さを地図に出し、町丁目ごとに集計します。</p>
+
+    <ol class="pipeline">
+      <li>
+        <div>
+          <h4>地盤の高さを格子にする</h4>
+          <p>国土地理院の標高タイル（5mメッシュ、ズーム15）をつなぎ合わせます。格子の1マスは、この緯度で地上約3.88m四方（約15m²）です。面積と体積は、地図上の見かけの大きさではなく地上の面積で計算しています（見かけの面積だと約1.52倍の過大になるため）。</p>
+          <span class="param">DEM5A</span><span class="param">約3.88m格子</span><span class="param">EPSG:3857</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>水の流れる向きと、くぼ地の容量を求める</h4>
+          <p><code>pysheds</code> で、標高の小さな穴や平らな所を補正したうえで、各マスから8方向のどこへ水が流れるか（D8流向）を決めます。補正前の地形との差から、各マスのくぼ地がどれだけ水をためられるかを求めます。</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>土地利用から、地表に流れ出す雨の割合を決める</h4>
+          <p>PLATEAUの土地利用と建物のデータから、マスごとに流出係数（降った雨のうち地表を流れる割合）を割り当てます。値は下水道の設計指針にある工種別の基礎流出係数を使っています。対象範囲の平均は<span class="num">0.81</span>です。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>区分</th><th class="num">流出係数</th><th class="num">感度分析の幅</th></tr></thead>
+              <tbody>
+                <tr><td>建物・屋根</td><td class="num">0.90</td><td class="num">0.85〜0.95</td></tr>
+                <tr><td>道路・舗装</td><td class="num">0.85</td><td class="num">0.80〜0.90</td></tr>
+                <tr><td>駐車場などの不浸透面<span class="sub">住宅の敷地の建物以外の部分を含む</span></td><td class="num">0.80</td><td class="num">0.75〜0.85</td></tr>
+                <tr><td>緑地<span class="sub">公園・校庭・未利用地など</span></td><td class="num">0.20</td><td class="num">0.10〜0.30</td></tr>
+                <tr><td>水面・その他<span class="sub">対象範囲では大半が鉄道の敷地</span></td><td class="num">1.00</td><td class="num">1.00</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>雨を降らせる</h4>
+          <p>区の想定最大規模降雨（1時間153mm・24時間690mm）を使います。1時間ごとの配分は暫定で、12時間目に153mmを置き、残りの537mmを23時間に均等（1時間約23.3mm）に割り振っています。</p>
+          <div class="rain" role="img" aria-label="24時間の雨の配分。12時間目だけ1時間153mm、ほかの23時間は1時間約23.3mm。点線は排水能力の1時間50mm。">
+            <svg viewBox="0 44 480 124" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor" style="color: var(--ink-3)">
+                <text x="30" y="60" text-anchor="end">153</text>
+                <text x="30" y="113" text-anchor="end">50</text>
+                <text x="30" y="143" text-anchor="end">0</text>
+                <text x="46" y="160">1</text>
+                <text x="245" y="160" text-anchor="middle">12</text>
+                <text x="462" y="160" text-anchor="end">24時間目</text>
+              </g>
+              <line x1="36" y1="140" x2="470" y2="140" stroke="var(--rule)" stroke-width="1"></line>
+              <g fill="var(--pond)" opacity="0.55">
+                <rect x="40" y="127.3" width="14" height="12.7"></rect><rect x="58" y="127.3" width="14" height="12.7"></rect><rect x="76" y="127.3" width="14" height="12.7"></rect><rect x="94" y="127.3" width="14" height="12.7"></rect><rect x="112" y="127.3" width="14" height="12.7"></rect><rect x="130" y="127.3" width="14" height="12.7"></rect><rect x="148" y="127.3" width="14" height="12.7"></rect><rect x="166" y="127.3" width="14" height="12.7"></rect><rect x="184" y="127.3" width="14" height="12.7"></rect><rect x="202" y="127.3" width="14" height="12.7"></rect><rect x="220" y="127.3" width="14" height="12.7"></rect>
+                <rect x="256" y="127.3" width="14" height="12.7"></rect><rect x="274" y="127.3" width="14" height="12.7"></rect><rect x="292" y="127.3" width="14" height="12.7"></rect><rect x="310" y="127.3" width="14" height="12.7"></rect><rect x="328" y="127.3" width="14" height="12.7"></rect><rect x="346" y="127.3" width="14" height="12.7"></rect><rect x="364" y="127.3" width="14" height="12.7"></rect><rect x="382" y="127.3" width="14" height="12.7"></rect><rect x="400" y="127.3" width="14" height="12.7"></rect><rect x="418" y="127.3" width="14" height="12.7"></rect><rect x="436" y="127.3" width="14" height="12.7"></rect><rect x="454" y="127.3" width="14" height="12.7"></rect>
+              </g>
+              <rect x="238" y="56.8" width="14" height="83.2" fill="var(--pond)"></rect>
+              <line x1="36" y1="112.8" x2="470" y2="112.8" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"></line>
+              <text x="258" y="64" font-family="BIZ UDPGothic, sans-serif" font-size="11" fill="var(--ink)">153mm</text>
+              <text x="466" y="107" text-anchor="end" font-family="BIZ UDPGothic, sans-serif" font-size="11" fill="var(--accent)">排水能力 50mm/h</text>
+            </svg>
+            <p class="cap">縦軸は1時間あたりの雨量（mm）。棒の高さは同じ目盛りで描いています。1時間目〜24時間目の各棒が1時間分です。</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>下水道が受け切れない分を地表に出す</h4>
+          <p>下水道の管路は計算に入れず、どのマスも一律に1時間50mm相当を排水できると仮定します（個別の管の能力ではありません）。10分ごとに、それを超えた分が地表の水になります。</p>
+          <div class="formula">あふれる雨 = max(0, 雨の強さ × 流出係数 − 50mm/h) × 10分</div>
+          <p class="small muted">地表にたまった水も、10分ごとに50mm/h相当ずつ排水されていきます。</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>低い所へ流し、くぼ地にためる</h4>
+          <p>あふれた水をD8流向に沿って下流へ送ります。途中のくぼ地が容量まで水をため、容量を超えた分はさらに下流へ流れます（二重計上しないよう、1コマで1回だけ下流へ送ります）。</p>
+          <p>このとき、隣に自分より低い道路のマス（道路・舗装が面積の半分以上）があれば、優先してそちらへ流します。住宅地の雨水は実際には道路の側溝へ集まるためです。道路のマスは全体の約19%です。</p>
+          <span class="param">道路の閾値 0.5</span><span class="param">建物での流れの遮断はなし</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h4>地図と町丁目ごとの数値にする</h4>
+          <p>24時間のうち最も深くなった時点の深さ（最大湛水深）を、地図では1cm以上を紫の濃淡で表示します。町丁目ごとには、<strong>深さ20cm以上になる面積が町の面積に占める割合</strong>を求め、次の区分で表します。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>20cm以上の面積の割合</th><th>区分</th></tr></thead>
+              <tbody>
+                <tr><td class="num">0%</td><td>湛水なし（この簡易モデル上）</td></tr>
+                <tr><td class="num">0.3%未満</td><td><span class="level"><span class="dot" style="background:#facc15"></span>軽微な湛水（注意）</span></td></tr>
+                <tr><td class="num">0.3〜0.6%未満</td><td><span class="level"><span class="dot" style="background:#fb923c"></span>道路冠水相当（警戒）</span></td></tr>
+                <tr><td class="num">0.6〜1.2%未満</td><td><span class="level"><span class="dot" style="background:#f97316"></span>床下浸水相当（警戒）</span></td></tr>
+                <tr><td class="num">1.2%以上</td><td><span class="level"><span class="dot" style="background:#dc2626"></span>床上浸水相当（危険）</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">区分の閾値は、試算の値の分布を参考に決めた値です。</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="check">
+    <h2>実績との照合</h2>
+    <p>区が公表している町丁目別の浸水実績と、試算の町丁目の順位がどれだけ合うかを、順位相関（Spearmanのρ）で確かめています。実績は地点や深さを含まない町丁目単位の件数なので、個々の場所の当たり外れではなく、町丁目の並びが合うかを見ています。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>試算の版</th><th class="num">R7.9.11の浸水件数との相関</th><th class="num">31年累計（率）との相関</th></tr></thead>
+        <tbody>
+          <tr><td>土地利用を反映した版</td><td class="num">+0.436</td><td class="num">+0.333</td></tr>
+          <tr><td><strong>道路へ優先して流す版（採用）</strong></td><td class="num"><strong>+0.528</strong></td><td class="num"><strong>+0.367</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li>対象は10町丁目で、差は統計的に有意ではありません。説明では「実績との整合がわずかに上がった」にとどめ、「精度が証明された」とは言いません。</li>
+      <li>道路の閾値（0.3／0.5）や流出係数を変えても、道路へ優先して流すと相関が下がる設定はありませんでした。</li>
+      <li>当初、町丁目のリスクを「最大の深さ」で判定していたところ、実績と逆の相関（ρ=−0.30）になっていました。「20cm以上の面積の割合」に切り替えたことで、実績と同じ向きになりました（2026-09-15）。</li>
+      <li>公式の浸水想定の層は、公式PDFの地図をQGISで位置合わせして色から作った派生データで、位置に数m程度の誤差があります。</li>
+    </ul>
+  </section>
+
+  <section id="chat">
+    <h2>チャットのしくみ</h2>
+    <p>AIに何でも答えさせるのではなく、危険な判断や範囲外の質問は、AIを呼ぶ前にプログラムで決まった答えを返します。AIが答えるときも、用意した知識の範囲だけを使わせ、形式を検査してから画面に出します。</p>
+    <div class="flow" role="img" aria-label="質問 → バックエンドの判定 → Dify（知識検索とGemini） → 回答の形式の検査 → 画面">
+      <div class="box"><b>質問</b><span>町丁目を選ぶか、名前を入力</span></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="box gate"><b>バックエンドの判定</b><span>緊急の言葉、避難や安全の判断・今の状況や予報を聞く質問、範囲外・特定できない場所・複数の町丁目は、ここで決まった答えを返す</span></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="box"><b>Dify</b><span>町丁目の知識を検索し、Geminiが回答を作る</span></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="box gate"><b>形式の検査</b><span>決まった形式でない、禁止事項に触れた、時間切れのときは定型の回答に戻す</span></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="box"><b>画面</b><span>回答と、続けて聞ける質問例</span></div>
+    </div>
+    <h3>AIに渡している知識（RAG）</h3>
+    <ul>
+      <li><strong>地域の背景</strong>: 立会川と暗渠、地形のパターンなどを一次資料で調べたもの</li>
+      <li><strong>町丁目ごとの事実（10件）</strong>: 地形、たまりやすい場所の位置と割合、公式の浸水想定、過去の浸水、避難所と土のう置場。データから機械的に作っており、10件とも同じ章立てです</li>
+      <li><strong>用語とデータの説明</strong>: 試算の前提と、回答のルール</li>
+    </ul>
+    <h3>回答のルール</h3>
+    <ul>
+      <li>知識とアプリが渡した数値の範囲で答える。数値や施設の状態を作らない</li>
+      <li>試算は予報ではないこと、自前の試算と公式の想定は出所が違うことを必ず添える</li>
+      <li>避難所が安全・開設中である、この道を通れる、この経路で避難すべき、とは言わない。公式情報の確認を案内する</li>    </ul>
+  </section>
+
+  <section id="data">
+    <h2>使っているデータ</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>データ</th><th>出どころ</th><th>使いみち</th></tr></thead>
+        <tbody>
+          <tr><td>標高（5mメッシュ）</td><td>国土地理院 標高タイル</td><td>地形、流れる向き、くぼ地</td></tr>
+          <tr><td>土地利用・建物</td><td>PLATEAU 2025年度版（土地利用は東京都土地利用現況調査2021）</td><td>流出係数、道路のマス</td></tr>
+          <tr><td>雨水出水浸水想定区域図</td><td>東京都（公式PDFを位置合わせして作成）</td><td>公式の浸水想定の層、比較</td></tr>
+          <tr><td>浸水実績</td><td>品川区（R7.9.11の町丁目別件数、1989〜2020年3月の累計棟数）</td><td>試算との照合、チャットの事実</td></tr>
+          <tr><td>町丁目の境界</td><td>e-Stat 令和2年国勢調査 小地域</td><td>町丁目ごとの集計、地図の境界線</td></tr>
+          <tr><td>避難所・土のう置場</td><td>品川区の公開情報（土のうは令和7年11月13日時点）</td><td>地図の記号、吹き出し、チャット</td></tr>
+          <tr><td>住所の座標</td><td>国土地理院 住所検索API</td><td>避難所・土のう置場の位置</td></tr>
+          <tr><td>通り名・背景地図</td><td>OpenStreetMap</td><td>たまりやすい場所の位置の説明、地図の背景</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>導入した技術・サービス</h2>
+    <div class="stack">
+      <div class="group">
+        <h4>計算・GIS（Python）</h4>
+        <dl>
+          <dt>pysheds</dt><dd>流れる向き、くぼ地の補正と容量</dd>
+          <dt>rasterio / GDAL</dt><dd>標高や結果の格子データ（GeoTIFF）の読み書き</dd>
+          <dt>GeoPandas</dt><dd>町丁目の境界での集計</dd>
+          <dt>NumPy / Pillow</dt><dd>水の収支の計算、地図に重ねる画像の作成</dd>
+          <dt>QGIS</dt><dd>公式PDFの位置合わせ、目視での確認</dd>
+        </dl>
+      </div>
+      <div class="group">
+        <h4>画面（フロントエンド）</h4>
+        <dl>
+          <dt>React 19</dt><dd>画面の部品</dd>
+          <dt>Vite</dt><dd>開発サーバーとビルド</dd>
+          <dt>MapLibre GL JS</dt><dd>地図、記号、吹き出し</dd>
+          <dt>Tailwind CSS</dt><dd>配色と余白</dd>
+          <dt>Storybook</dt><dd>部品ごとの見た目の確認</dd>
+          <dt>Playwright</dt><dd>ブラウザを自動で操作した動作確認</dd>
+        </dl>
+      </div>
+      <div class="group">
+        <h4>サーバー（バックエンド）</h4>
+        <dl>
+          <dt>FastAPI / uvicorn</dt><dd>チャットと地図データのAPI</dd>
+          <dt>Pydantic</dt><dd>回答の形式の検査</dd>
+        </dl>
+      </div>
+      <div class="group">
+        <h4>公開先</h4>
+        <dl>
+          <dt>Vercel</dt><dd>画面の配信（naisui.vercel.app）</dd>
+          <dt>Render</dt><dd>サーバーの実行（Starterプラン 月7ドル、シンガポール）</dd>
+          <dt>GitHub</dt><dd>プッシュすると両方に自動で反映</dd>
+        </dl>
+      </div>
+      <div class="group">
+        <h4>AI</h4>
+        <dl>
+          <dt>Dify（クラウド版）</dt><dd>知識の検索と回答の流れ（チャットフロー）</dd>
+          <dt>Gemini 3.8 Flash</dt><dd>回答の生成（有料枠）</dd>
+          <dt>gemini-embedding-001</dt><dd>知識の検索用の埋め込み</dd>
+        </dl>
+      </div>
+      <div class="group">
+        <h4>開発の支援</h4>
+        <dl>
+          <dt>Claude Code</dt><dd>実装、データ処理、資料作成</dd>
+          <dt>graphify</dt><dd>コードと資料の関係を知識グラフにして、作業の経緯を引き継ぐ</dd>
+          <dt>UIの点検用スキル</dt><dd>要件の確認、デザイン、アクセシビリティの点検</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:12px">Difyの無料プランは、ナレッジの検索回数に1分あたりの上限があり、続けて10回ほど聞くと定型の回答に戻ります。複数人で使うならDifyの有料プランが必要です。</p>
+  </section>
+
+  <section id="history">
+    <h2>経緯</h2>
+    <ul class="timeline">
+      <li><time datetime="2026-09-14">09-14</time><span>東京都の浸水想定区域図のPDFをQGISで位置合わせし、凡例の色から浸水想定の層を作成</span></li>
+      <li><time datetime="2026-09-15">09-15</time><span>区の浸水実績で初めて試算を照合。リスク判定を「最大の深さ」から「20cm以上の面積の割合」に修正し、pyshedsの地表流モデルを採用</span></li>
+      <li><time datetime="2026-09-25">09-25</time><span>前提を見直し、「雨水のたまりやすさマップ」と改名。PLATEAUの土地利用と道路への優先流下を入れた版を採用。地域の背景を調べ、AI用の知識を作成</span></li>
+      <li><time datetime="2026-09-28">09-28</time><span>チャットをDifyにつなぎ、知識に避難所の住所と土のうの袋の数を追加</span></li>
+      <li><time datetime="2026-09-29">09-29</time><span>避難所・土のう置場の記号と吹き出し、質問例、配色、全画面表示を追加。「状況」という言い方と、重複していた根拠の欄をやめた。判断や今の状況を聞く質問にはAIを呼ばずに答えるようにし、画面をVercel、サーバーをRenderに公開</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    リポジトリ: github.com/junhongo-ccs/naisui ／ 詳しい資料は <code>docs/</code>（引継ぎ・タスクリスト、モデル検証、PLATEAU導入計画）にあります。
+  </footer>
+</div>
+
+</body>
+</html>

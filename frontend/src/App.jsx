@@ -56,6 +56,8 @@ export default function App() {
   const [scenarioDetail, setScenarioDetail] = useState(null);
 
   const [selectedTown, setSelectedTown] = useState(null); // {name, slug}
+  // 地域を選ぶ欄の開閉。町丁目が選ばれたら閉じ、会話の場所を空ける（見出しで開き直せる）。
+  const [selectorOpen, setSelectorOpen] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,6 +79,7 @@ export default function App() {
 
   const handleTownSelect = (town) => {
     setSelectedTown(town);
+    setSelectorOpen(false);
     setInput(`${town.name}について教えて`);
   };
 
@@ -99,7 +102,10 @@ export default function App() {
       // メッセージ中の町丁目名をバックエンドが読み取った場合は、画面の選択状態（地図の強調表示）も合わせる。
       if (res.town_slug && res.town_slug !== selectedTown?.slug) {
         const town = towns.find((t) => t.slug === res.town_slug);
-        if (town) setSelectedTown(town);
+        if (town) {
+          setSelectedTown(town);
+          setSelectorOpen(false);
+        }
       }
       setMessages((prev) => [
         ...prev,
@@ -127,17 +133,25 @@ export default function App() {
     <div className="h-screen w-screen flex flex-col bg-surface text-gray-900">
       {/* 避難所の記号（brand-600）より一段濃い緑。白文字とのコントラスト比 約5.0:1 */}
       <header className="flex items-center justify-between gap-4 px-4 py-2 bg-brand-700 text-white">
-        <div className="font-medium text-sm whitespace-nowrap">中延・二葉 雨水のたまりやすさマップ</div>
+        {/* スマートフォンでは幅が足りないので、地名を省いてマップ名だけにする。 */}
+        <div className="flex items-center gap-1.5 font-medium text-sm whitespace-nowrap">
+          {/* Material Icons「opacity」（Apache License 2.0）。フォントを読み込まずにSVGで直接描く。 */}
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 flex-none" fill="currentColor">
+            <path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67 3.61 2.35 5.66 2.35 4.1-.79 5.66-2.35S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z" />
+          </svg>
+          {isPC ? "品川区 中延・二葉地区 雨水のたまりやすさマップ" : "雨水のたまりやすさマップ"}
+        </div>
         <div className="flex items-center gap-4">
           <a
-            href="https://www.city.shinagawa.tokyo.jp/PC/bosai/bosai2/index.html"
+            href="/about.html"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener"
             className="text-xs text-white underline whitespace-nowrap hover:text-brand-100"
           >
-            品川区の公式情報を確認
+            このマップについて
           </a>
-          <FullscreenButton />
+          {/* 全画面はノートPC向け。スマートフォンはチャットだけの表示なので出さない。 */}
+          {isPC && <FullscreenButton />}
         </div>
       </header>
 
@@ -156,7 +170,13 @@ export default function App() {
           </div>
           <div className="flex flex-col min-h-0 h-full">
             <div className="p-3 border-b border-gray-100">
-              <TownSelector towns={towns} selectedSlug={selectedTown?.slug} onSelect={handleTownSelect} />
+              <TownSelector
+                towns={towns}
+                selectedSlug={selectedTown?.slug}
+                onSelect={handleTownSelect}
+                open={selectorOpen}
+                onOpenChange={setSelectorOpen}
+              />
             </div>
             <div className="flex-1 min-h-0">
               <ChatPanel
@@ -175,7 +195,13 @@ export default function App() {
       ) : (
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="p-3 border-b border-gray-100 bg-white">
-            <TownSelector towns={towns} selectedSlug={selectedTown?.slug} onSelect={handleTownSelect} />
+            <TownSelector
+              towns={towns}
+              selectedSlug={selectedTown?.slug}
+              onSelect={handleTownSelect}
+              open={selectorOpen}
+              onOpenChange={setSelectorOpen}
+            />
           </div>
           <div className="flex-1 min-h-0">
             <ChatPanel

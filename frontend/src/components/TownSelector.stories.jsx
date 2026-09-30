@@ -21,14 +21,35 @@ export default {
 };
 
 export const NoSelection = {
-  render: () => <TownSelector towns={towns} selectedSlug={null} onSelect={() => {}} />,
+  render: () => {
+    const [open, setOpen] = useState(true);
+    return <TownSelector towns={towns} selectedSlug={null} onSelect={() => {}} open={open} onOpenChange={setOpen} />;
+  },
 };
 
+// 選ぶと閉じ、見出しに選んだ町丁目が出る。見出しを押すと開き直せる。
 export const Interactive = {
   render: () => {
-    const [selected, setSelected] = useState("futaba-3");
+    const [selected, setSelected] = useState(null);
+    const [open, setOpen] = useState(true);
     return (
-      <TownSelector towns={towns} selectedSlug={selected} onSelect={(t) => setSelected(t.slug)} />
+      <TownSelector
+        towns={towns}
+        selectedSlug={selected}
+        onSelect={(t) => {
+          setSelected(t.slug);
+          setOpen(false);
+        }}
+        open={open}
+        onOpenChange={setOpen}
+      />
     );
+  },
+};
+
+export const CollapsedWithSelection = {
+  render: () => {
+    const [open, setOpen] = useState(false);
+    return <TownSelector towns={towns} selectedSlug="futaba-3" onSelect={() => {}} open={open} onOpenChange={setOpen} />;
   },
 };
